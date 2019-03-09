@@ -1,3 +1,3 @@
-# Vue.js Todo MVC Chrome Extension
+# Chrome Extension for webstrates bookmark extraction
 
-Repo for the project built in [this article](http://vuejsdevelopers.com/2017/05/08/vue-js-chrome-extension/).
+Inspired by [this article](http://vuejsdevelopers.com/2017/05/08/vue-js-chrome-extension/).
