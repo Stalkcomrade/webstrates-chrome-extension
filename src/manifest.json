@@ -1,0 +1,22 @@
+{
+    "name": "Vue.js Chrome Extension",
+    "options_page": "options.html",
+    "background": {
+        "page": "background.html",
+        "script": "background.js,"
+    },
+    "web_accessible_resources": [
+        "assets/*"
+    ],
+    "permissions": [
+        "storage",
+        "bookmarks",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "browser_action": {
+        "default_popup": "popup.html"
+    },
+    "manifest_version": 2,
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}
