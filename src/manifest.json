@@ -1,6 +1,10 @@
 {
     "name": "Vue.js Chrome Extension",
     "options_page": "options.html",
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
     "background": {
         "page": "background.html",
         "script": "background.js,"
