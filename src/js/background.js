@@ -1,4 +1,5 @@
 console.log("storage")
+
 chrome.runtime.onInstalled.addListener(function() {
 
     function doSomething(a) {
@@ -24,3 +25,21 @@ chrome.runtime.onInstalled.addListener(function() {
     doSomething("webstrates");
 
 });
+
+save_options: function() {
+
+    var server = this.server
+
+    chrome.storage.sync.set({
+        server: server
+    }, () => {
+
+        // Update status to let user know options were saved.
+        this.status = 'Options saved'
+
+        setTimeout(() => {
+            this.status = ''
+        }, 1000);
+
+    });
+}

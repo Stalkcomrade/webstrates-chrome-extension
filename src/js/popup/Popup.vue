@@ -1,8 +1,8 @@
 <template>
   <div id="app">
       <header class="header">
-        <h1> TODO </h1>
-        <p> Some text </p>
+        <h1> Webstrates Bookmarks </h1>
+        <p> </p>
         <div v-for="bk in config">
           <p> {{ bk.title }} : {{  bk.url }} </p>
           <img src="ws.png"/>
@@ -12,7 +12,7 @@
 </template>
 
 
-<script>
+<script lang="js">
 export default {
     methods: {
         categoriesByWebstrate: function(storage) {
