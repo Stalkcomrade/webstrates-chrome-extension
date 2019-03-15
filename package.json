@@ -20,6 +20,7 @@
     "devDependencies": {
         "@babel/core": "^7.3.4",
         "babel-loader": "^8.0.5",
+        "vue": "^2.6.9",
         "vue-loader": "^15.7.0",
         "vue-template-compiler": "^2.6.8"
     }

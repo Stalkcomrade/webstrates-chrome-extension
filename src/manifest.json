@@ -10,7 +10,7 @@
         "script": "background.js,"
     },
     "web_accessible_resources": [
-        "assets/*"
+        "assets/*.png"
     ],
     "permissions": [
         "storage",

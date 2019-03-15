@@ -5,7 +5,9 @@
         <p> </p>
         <div v-for="bk in config">
           <p> {{ bk.title }} : {{  bk.url }} </p>
-          <img src="ws.png"/>
+          <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
+          <!-- <img :src="require('../../../assets/ws.png')"/> -->
+          <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
         </div>
       </header>
   </div>
@@ -13,6 +15,7 @@
 
 
 <script lang="js">
+
 export default {
     methods: {
         categoriesByWebstrate: function(storage) {
@@ -36,7 +39,7 @@ export default {
             this.config = storage.config;
 }
 },
-    data: () => ({
+  data: () => ({
         config: []
     }),
 mounted() {

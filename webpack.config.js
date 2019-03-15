@@ -3,15 +3,22 @@ var webpack = require("webpack"),
     fileSystem = require("fs"),
     env = require("./utils/env"),
     HtmlWebpackPlugin = require("html-webpack-plugin"),
+    // CopyWebpackPlugin = require('copy-webpack-plugin'),
+    // CleanWebpackPlugin = require('clean-webpack-plugin'),
     {
         VueLoaderPlugin
     } = require('vue-loader'),
     WriteFilePlugin = require("write-file-webpack-plugin");
 
+function resolve(dir) {
+    return path.join(__dirname, '..', dir)
+}
+
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var alias = {
-    'ws.png': './assets/ws.png'
+    //     'ws.png': './assets/ws.png'
+    // 'vue': 'node_modules/vue/dist/vue.runtime.min.js' // specifying minified build
 };
 
 // load the secrets
@@ -42,7 +49,8 @@ var options = {
                 options: {
                     loaders: {
                         'scss': 'vue-style-loader!css-loader!sass-loader',
-                        'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax'
+                        'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
+                        'file-loader': 'file-loader'
 
                     },
                     extractCSS: true
@@ -53,6 +61,16 @@ var options = {
                 loader: 'babel-loader',
                 exclude: /node_modules/
             },
+            // {
+            //     test: /\.(png|jpg|gif|svg)$/,
+            //     loader: 'file-loader',
+            //     options: {
+            //         publicPath: (url, resourcePath, context) => {
+            //             return "chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/"
+            //         },
+            //         name: '[name].[ext]?[hash]'
+            //     }
+            // },
             {
                 test: /\.(png|jpg|gif|svg)$/,
                 loader: 'file-loader',
@@ -98,7 +116,6 @@ var options = {
             filename: "background.html",
             chunks: ["background"]
         }),
-        new WriteFilePlugin(),
         new ExtractTextPlugin("style.css"),
     ]
 };
