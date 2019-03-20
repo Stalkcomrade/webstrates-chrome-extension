@@ -9,145 +9,136 @@
   <textarea v-model="server" placeholder="add server"></textarea>
   <br>
   <p style="white-space: pre-line;"> {{ status }} </p>
+  
   <br>
   <button @click="save_options">Save Server</button>
   <button @click="restore_options">Load Saved Servers</button>
+  <button @click="delete_options">Delete Saved Servers</button>
 
+  <br>
+  <ul v-for="srv in server">
+    <li> {{ srv }} </li>
+  </ul>
+  
   <br>
   <br>
   
   <select v-model="selected">
-    <option disabled value="">Select Groupping</option>
+    <option disabled value=""> Select Grouping </option>
       <option v-for="option in options"> {{ option }} </option>
   </select>
-  <span>Selected: {{ selected }}</span>
+  <span> Selected: {{ selected }} </span>
 
+  <svg width="120" height="120" id="icn" :ref="icn">
+    <!-- <a :ref="ref"> -->
+      </svg>
 
   <br>
 
-  <div v-for"serverinst in server">  
-    <p> {{ serverinst }} </p>
-      
 
-  </div>
+  </div> 
   
 </template>
 
 
 <script lang="js">
 
+import * as d3 from 'd3';
+
 export default {
     
     data: () => ({
         selected: "",
         server: [],
+        icon: '',
+        // serverReact: [],
         status: "unsaved",
         options: ["by server", "by webstrate"]
     }),
+    computed: {
+        // server() {return serverReact}
+    },
+    methods: {
 
-methods: {
-    
-    // Restores select box and checkbox state using the preferences
-    // stored in chrome.storage.
-restore_options: function() {
-        
-chrome.storage.sync.get(null, (servers) =>  {
+        delete_options: function() {
 
-    // debugger;
-
-
-   console.log(servers)
- console.log(Object.keys(servers))
-
-  this.server = Object.values(servers.server) // get array of values
-  console.log(this.server)
-})
-},
-
-        // Saves options to chrome.storage
-save_options: function() {
-
-// TODO: checking for existing settings in the beginning
-
-var flag = false
-
-try {
-
-// chrome.storage.sync.get(["server"], (result) =>  {
-chrome.storage.sync.get(null, (result) =>  {
-
-if (typeof result["server"] !== undefined) {
-
-console.log(result["server"])
-var array = result["server"] // not sure it is needed
-
-array.unshift(this.server)
-
-var jsObj = {}
-jsonObj["server"] = array
-
-chrome.storage.sync.set(jsonObj, () =>  {
-
-console.log("Saved a new array item", jsonObj);
-// this.server = jsonObj
-this.status = 'Options saved'
-
-});
-
-
-} else (flag = true)
-
-})
-
-} catch(error) {console.log("CAtched", error) }
-
-if (flag === true) {
-
-             var server = this.server
-             chrome.storage.sync.set({
-                // server
-             }, () => {
+            var jsObj = {}
+            jsObj["server"] = []
+                        
+            chrome.storage.sync.set(jsObj, () =>  {
                 
-                // Update status to let user know options were saved.
-              this.status = 'Options saved'
-              console.log(this.status)
-                console.log("saved")
+                this.status = 'Options Deleted'
+                this.server = ''
                 
-                  // setTimeout(() => {
-                //     this.status = ''
-                // }, 1000)
-                
-             })
-
-// TODO: push new server or retrive from storage
-
-
-}
+            });
 
         },
+        // Restores select box and checkbox state using the preferences
+        // stored in chrome.storage.
+        restore_options: function() {
             
+            chrome.storage.sync.get(null, (servers) => {
+                
+                this.server = Object.values(servers.server) // SOLVED: server is not really array get array of values
+                console.log(this.server)
+
+            })
+        },
+        
+        // Saves options to chrome.storage
+        save_options: function() {
+            
+            try {
+                
+                // chrome.storage.sync.get(["server"], (result) =>  {
+                chrome.storage.sync.get(null, (result) =>  {
+                    
+                    if (typeof result["server"] !== undefined) {
+                        
+                        // INFO: if results are not in array, make them
+                        var array = Array.isArray(result["server"]) ? result["server"] : [result["server"]]
+                        this.server = array.unshift(this.server) // FIXME: react server
+                        var jsObj = {}
+                        jsObj["server"] = array
+                        
+                        chrome.storage.sync.set(jsObj, () =>  {
+                            
+                            console.log("Saved a new array item", jsObj);
+                            this.status = 'Options saved'
+                            
+                        });
+                        
+                    } else {
+                        console.log("Servers are not defined")
+                    }
+                        
+                })
+                
+            } catch(error) {
+                console.log("Issue with Saving Servers", error)
+            }
+            
+        }
+            
+        },
+        
     mounted() {
 
-        this.$nextTick(function () {
-            this.restore_options()
-  })
+        this.icon = "M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"
 
-setTimeout(() => {
-console.log(this.server)
-}, 2000)
-
-        
-
-        
-
+        d3.select("#icn")
+            .append("g")
+	    .attr("transform", (d) => { return "translate(" + (10) + ",2)";})
+	    .append("path")
+	    .attr("d", this.icon)
+            
             }
             
     }
-}
         
 </script>
 
 
 <style>
 
-  </style>
+</style>
