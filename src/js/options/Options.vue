@@ -44,12 +44,15 @@
 <script lang="js">
 
 import * as d3 from 'd3';
+import {
+   storageMixin
+} from '../../mixin'
 
 export default {
-    
+    mixins: [storageMixin],
     data: () => ({
         selected: "",
-        server: [],
+        // server: [],
         icon: '',
         // serverReact: [],
         status: "unsaved",
@@ -73,19 +76,6 @@ export default {
             });
 
         },
-        // Restores select box and checkbox state using the preferences
-        // stored in chrome.storage.
-        restore_options: function() {
-            
-            chrome.storage.sync.get(null, (servers) => {
-                
-                this.server = Object.values(servers.server) // SOLVED: server is not really array get array of values
-                console.log(this.server)
-
-            })
-        },
-        
-        // Saves options to chrome.storage
         save_options: function() {
             
             try {

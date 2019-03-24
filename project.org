@@ -1,0 +1,33 @@
+#+begin_src js     '"*Javascript REPL*"'
+
+var ts = function(history) {
+    
+    var myString = history,
+        regRes,
+        myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
+    
+    match = myRegexp.exec(myString);
+    
+    regRes = {
+	server: match[2],
+	webstrateId: match[4],
+        // version: match[4],
+        // tag: match[6]
+    }
+
+    console.log(regRes)
+    return regRes
+}
+
+temp1.forEach(el => {
+
+    ts(el)
+
+})
+
+var myString = "https://webstrates.cs.au.dk/wicked-wombat-56/#/calendar",
+                regRes,
+                myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
+            
+            match = myRegexp.exec(myString);
+#+end_src
