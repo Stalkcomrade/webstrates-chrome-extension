@@ -49,28 +49,47 @@ export default {
               sortable: true,
               // Variant applies to the whole column, including the header and footer
               variant: 'danger'
+          },
+          {
+              key: 'bookmark',
+              sortable: true,
+              variant: 'danger'
           }
       ]
   }),
     methods: {
-        extractInfo: function(history) {
+        /**
+         * 
+         * @param history - string to extract information from
+         * @param mode - "history" or "bookmark"
+         * @return - no return value, pushes to this.history
+         */
+        extractInfo: function(history, mode) {
             
              var myString = history,
                  regRes,
-                 myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
+                 myRegexp = /^https:\/\/(.*?)\/(.*?)\/(.*?|.*?$)\/?([0-9]+|[a-zA-Z]+)?(.*?|\/)?$/g;
+                 // myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
     
             var match = myRegexp.exec(myString);
-    
-            regRes = {
-	        server:  match !== null ? match[2] : "undefined",
-	        webstrateId:  match !== null ? match[4]: "undefined",
-                version:  match !== null ? match[4] : "last"
-                // tag: match[6]
-            }
+
+                regRes = {
+	            server:  match !== null ? match[1] : "undefined",
+	            webstrateId:  match !== null ? match[2]: "undefined",
+                    version:  match !== null ? match[3] : "last",
+                    bookmark: mode === "history" ? "history" : "bookmark"
+                    // tag: match[6]
+                }
 
             console.log(regRes)
             return regRes
-        }, 
+        },
+        /**
+         * 
+         * @param text - search query
+         * @return - no return value, pushes to this.history
+         */
+        
         searchHistory: function(text){
             
             this.history = []
@@ -83,65 +102,101 @@ export default {
                                        })
                                    })
         },
-        categoriesByWebstrate: function(storage) {
-            storage.config.forEach(el => {
-                el.indexOf("webstrates.cs.au.dk")
-                el.indexOf("webstrates.r2.enst.fr")
-            })
-        },
-        categoriseByDomain: function(storage) {
-            storage.config.forEach(el => {
-                el.indexOf("webstrates.cs.au.dk")
-                el.indexOf("webstrates.r2.enst.fr")
-            })
-        },
-        setConfig: function(storage) {
-            /**
+        /**
              * set our internal state
              * with the result from the
              * chrome api call
              */
+        setConfig: function(storage) {
             this.config = storage.config;
         }
+        // categoriesByWebstrate: function(storage) {
+        //     storage.config.forEach(el => {
+        //         el.indexOf("webstrates.cs.au.dk")
+        //         el.indexOf("webstrates.r2.enst.fr")
+        //     })
+        // },
+        // categoriseByDomain: function(storage) {
+        //     storage.config.forEach(el => {
+        //         el.indexOf("webstrates.cs.au.dk")
+        //         el.indexOf("webstrates.r2.enst.fr")
+        //     })
+        // },
     },
     mounted() {
 
 
-        this.$nextTick(() => {
-            this.restore_options()
-            })
+        // FIXME: it seems that bookmarks are not extracted in the right time
+        // this.$nextTick(() => {
         
-        this.searchHistory("webstrates")
-        console.log(this.history)
+        this.restore_options()
+        
+            // })
 
+        // INFO: search for corresponding links within name of each server
+        // as the search query
+
+        this.server.forEach(el => {
+            this.searchHistory(el)
+        })
+        
         setTimeout(() => {
             this.history.forEach(el => {
 
-                // TODO: fetch list of available servers
+                // SOLVED: fetch list of available servers
 
                 this.server.forEach(server => {
 
-                    console.log(el)
-                    console.log(server)
+                    // debugger;
+                    // console.log(el)
+                    // console.log(server)
                     el.indexOf(server) > -1 &&
-                    this.processedHistory.push(this.extractInfo(el))
+                        this.processedHistory.push(this.extractInfo(el, "history"))
 
                 })
                 
                 
             })
-        }, 1500)
+        }, 2500)
         
 
         console.log(this.processedHistory)
         
-        
+
+        // INFO: extract bookmarks
         this.$nextTick(() => {
-            chrome.storage.sync.get(['config'], this.setConfig)
+            // chrome.storage.sync.get(['config'], this.setConfig)
+
+            // this.server.forEach(server => {
+
+            //     this.config.forEach(bookmark => {
+
+            //         bookmark.indexOf
+                
+            // })
+
+            // })
+
+            
         })
 
         setTimeout(() => {
             console.log(this.config)
+            chrome.storage.sync.get(['config'], this.setConfig)
+
+            console.log("Bookmarks", this.config)
+
+            this.server.forEach(server => {
+
+                this.config.forEach(bookmark => {
+
+                    bookmark.indexOf
+                
+            })
+
+            })
+
+            
         }, 3000)
           
       }

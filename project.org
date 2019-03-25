@@ -2,21 +2,21 @@
 
 var ts = function(history) {
     
-    var myString = history,
-        regRes,
-        myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
+              var myString = history,
+                 regRes,
+                 myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
     
-    match = myRegexp.exec(myString);
+            var match = myRegexp.exec(myString);
     
-    regRes = {
-	server: match[2],
-	webstrateId: match[4],
-        // version: match[4],
-        // tag: match[6]
-    }
+            regRes = {
+	        server:  match !== null ? match[2] : "undefined",
+	        webstrateId:  match !== null ? match[4]: "undefined",
+                version:  match !== null ? match[4] : "last"
+                // tag: match[6]
+            }
 
-    console.log(regRes)
-    return regRes
+            console.log(regRes)
+            return regRes
 }
 
 temp1.forEach(el => {

@@ -4,8 +4,8 @@ export const storageMixin = {
     }),
     methods: {
 
-        // TODO: list of default servers
-        // TODO: use this func from mixins only
+        // SOLVED: list of default servers
+        // SOLVED: use this func from mixins only
 
         // Restores select box and checkbox state using the preferences
         // stored in chrome.storage.
@@ -13,8 +13,11 @@ export const storageMixin = {
 
             chrome.storage.sync.get(null, (servers) => {
 
-                this.server.push(Object.values(servers.server)) // SOLVED: server is not really array get array of values
-                console.log(this.server)
+                Object.values(servers.server).forEach(server => {
+                    this.server.push(server) // SOLVED: server is not really array get array of values
+                    // console.log(this.server)
+                })
+
 
             })
         },
