@@ -25,6 +25,7 @@
         "d3": "^5.9.2",
         "vue": "^2.6.9",
         "vue-loader": "^15.7.0",
-        "vue-template-compiler": "^2.6.8"
+        "vue-template-compiler": "^2.6.8",
+        "webpack-chrome-extension-reloader": "^1.2.0"
     }
 }

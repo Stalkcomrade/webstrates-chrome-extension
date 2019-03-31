@@ -3,8 +3,7 @@ var webpack = require("webpack"),
     fileSystem = require("fs"),
     env = require("./utils/env"),
     HtmlWebpackPlugin = require("html-webpack-plugin"),
-    // CopyWebpackPlugin = require('copy-webpack-plugin'),
-    // CleanWebpackPlugin = require('clean-webpack-plugin'),
+    ChromeExtensionReloader = require('webpack-chrome-extension-reloader'),
     {
         VueLoaderPlugin
     } = require('vue-loader'),
@@ -96,6 +95,14 @@ var options = {
         new webpack.DefinePlugin({
             "process.env.NODE_ENV": JSON.stringify(env.NODE_ENV)
         }),
+        // new ChromeExtensionReloader({
+        //     port: 9090, // Which port use to create the server
+        //     reloadPage: true, // Force the reload of the page also
+        //     entries: { // The entries used for the content/background scripts
+        //         contentScript: ['popup', 'options'],
+        //         background: 'background' // *REQUIRED
+        //     }
+        // }),
         new VueLoaderPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, "src", "popup.html"),

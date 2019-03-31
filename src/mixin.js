@@ -13,10 +13,13 @@ export const storageMixin = {
 
             chrome.storage.sync.get(null, (servers) => {
 
+
                 Object.values(servers.server).forEach(server => {
                     this.server.push(server) // SOLVED: server is not really array get array of values
                     // console.log(this.server)
                 })
+
+                console.log("Restoring Servers", this.server)
 
 
             })

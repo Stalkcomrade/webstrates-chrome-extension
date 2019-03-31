@@ -30,7 +30,8 @@ export default {
     components: {
         'b-table': BTable
     },
-      data: () => ({
+    data: () => ({
+          bookmarksProcessed: [],
           config: [],
           history: [],
           processedHistory: [],
@@ -69,7 +70,7 @@ export default {
              var myString = history,
                  regRes,
                  myRegexp = /^https:\/\/(.*?)\/(.*?)\/(.*?|.*?$)\/?([0-9]+|[a-zA-Z]+)?(.*?|\/)?$/g;
-                 // myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
+            // myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
     
             var match = myRegexp.exec(myString);
 
@@ -81,7 +82,7 @@ export default {
                     // tag: match[6]
                 }
 
-            console.log(regRes)
+            // console.log(regRes)
             return regRes
         },
         /**
@@ -97,7 +98,7 @@ export default {
             chrome.history.search({text: text,
                                    maxResults: 10000}, (data) => {
                                        data.forEach((page) => {
-                                           console.log(page.url);
+                                           // console.log(page.url);
                                            this.history.push(page.url)
                                        })
                                    })
@@ -110,28 +111,14 @@ export default {
         setConfig: function(storage) {
             this.config = storage.config;
         }
-        // categoriesByWebstrate: function(storage) {
-        //     storage.config.forEach(el => {
-        //         el.indexOf("webstrates.cs.au.dk")
-        //         el.indexOf("webstrates.r2.enst.fr")
-        //     })
-        // },
-        // categoriseByDomain: function(storage) {
-        //     storage.config.forEach(el => {
-        //         el.indexOf("webstrates.cs.au.dk")
-        //         el.indexOf("webstrates.r2.enst.fr")
-        //     })
-        // },
     },
     mounted() {
 
 
         // FIXME: it seems that bookmarks are not extracted in the right time
-        // this.$nextTick(() => {
-        
-        this.restore_options()
-        
-            // })
+        this.$nextTick(() => {
+            this.restore_options()
+            })
 
         // INFO: search for corresponding links within name of each server
         // as the search query
@@ -139,65 +126,57 @@ export default {
         this.server.forEach(el => {
             this.searchHistory(el)
         })
-        
+
+        // INFO: extracting history
         setTimeout(() => {
             this.history.forEach(el => {
 
                 // SOLVED: fetch list of available servers
-
                 this.server.forEach(server => {
 
-                    // debugger;
-                    // console.log(el)
-                    // console.log(server)
                     el.indexOf(server) > -1 &&
                         this.processedHistory.push(this.extractInfo(el, "history"))
 
                 })
                 
-                
             })
-        }, 2500)
-        
 
-        console.log(this.processedHistory)
+            console.log("Processed History: ",this.processedHistory)
+            
+        }, 2500)
         
 
         // INFO: extract bookmarks
         this.$nextTick(() => {
             // chrome.storage.sync.get(['config'], this.setConfig)
-
             // this.server.forEach(server => {
-
             //     this.config.forEach(bookmark => {
-
             //         bookmark.indexOf
-                
             // })
-
             // })
-
-            
         })
 
+
+        // INFO: extracting bookmarks
         setTimeout(() => {
-            console.log(this.config)
+
+            // FIXME: config is empty
+            console.log("Config before addressing storage: ", this.config)
             chrome.storage.sync.get(['config'], this.setConfig)
+            console.log("Bookmarks - from storage: ", this.config)
 
-            console.log("Bookmarks", this.config)
-
-            this.server.forEach(server => {
-
-                this.config.forEach(bookmark => {
-
-                    bookmark.indexOf
-                
-            })
-
-            })
+            // this.server.forEach(server => {
+            //     this.config.forEach(bookmark => {
+            //         // INFO: update bookmarks based on server in the storage
+            //         console.log("Looking for bookmarks", bookmark.indexOf(server) > -1)
+            //         if (bookmark.indexOf(server) > -1) {
+            //             this.bookmarksProcessed.push(bookmark)
+            //         }
+            // })
+            // })
 
             
-        }, 3000)
+        }, 1500)
           
       }
       

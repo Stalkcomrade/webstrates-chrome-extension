@@ -1,9 +1,6 @@
-// console.log("storage")
-
 chrome.runtime.onInstalled.addListener(function() {
 
-    // TODO: read user servers first
-
+    // SOLVED: read user servers first
     var serversDefined = ["webstrates.cs.au.dk", "webstrates.r2.enst.fr"]
 
     // INFO: this fun duplicates one in vue mixins
@@ -19,74 +16,98 @@ chrome.runtime.onInstalled.addListener(function() {
         })
     }
 
+    let bkmExtracted;
+    let bookmarksAll = [];
 
-    function extractBookmarks(a) {
+    function traverseBookmarks(bookmarkTreeNodes) {
 
-        chrome.bookmarks.search(a, function(items) {
+        for (var i = 0; i < bookmarkTreeNodes.length; i++) {
 
-            // INFO: extracting new bookmarks
-            var source = [];
-            for (var i = 0; i < items.length; i++) {
-                source[i] = items[i];
-            }
-
-            // TODO: first, check whether config already contains
-            // extracted bookmarks
-
-            chrome.storage.sync.get(null, (result) => {
-
-                if (result["config"] !== undefined) {
-
-                    debugger;
-                    //   var array = Array.isArray(result["config"]) ? result["config"] : [result["config"]]
-                    var array = Array.isArray(result["config"]) && result["config"]
-                    var jsObj = {}
-                    console.log("CALL", array)
-                    jsObj["config"] = array
-                    // jsObj["config"].push(source)
-                    jsObj["config"] = jsObj["config"].concat(source)
-
-                    console.log("BACK")
-
-                    // TODO: check for duplicates
-                    // console.log("storage")
-
-                    chrome.storage.sync.set({
-                            // config: source
-                            config: jsObj["config"]
-                        },
-                        null
-                    );
-
-                    //  alert(source[0].title);
-
-                }
-
+            bookmarksAll.push({
+                title: bookmarkTreeNodes[i].title,
+                urlOrFolder: bookmarkTreeNodes[i].url ? bookmarkTreeNodes[i].url : "[Folder]"
             })
 
+            if (bookmarkTreeNodes[i].children) {
+                traverseBookmarks(bookmarkTreeNodes[i].children);
+            }
 
+        }
 
-        });
+        return bookmarksAll
+
     }
 
-    restore_options();
+    var bookmarkTreeNodes = chrome.bookmarks.getTree(
+        function(bookmarkTreeNodes) {
+            bkmExtracted = traverseBookmarks(bookmarkTreeNodes);
+            console.log("bookmarkTreeNodes: ", bkmExtracted)
+        });
 
-    // clean bookmark storage
-    // chrome.storage.sync.set({
-    //         // config: source
-    //         config: []
-    //     },
-    //     null
-    // );
+
+    console.log("Restore Options");
+    restore_options();
 
     setTimeout(() => {
 
+        let containerObject = []
+
+        console.log("serversDefined", serversDefined)
+        // specifying url to search trhough
         serversDefined.forEach(srv => {
 
-            console.log(srv)
-            extractBookmarks(srv);
+            bkmExtracted.forEach(bkm => {
+
+                bkm.urlOrFolder.indexOf(srv) > -1 && containerObject.push(bkm)
+
+            })
 
         })
+
+
+        // TODO: clean bookmark storage
+        chrome.storage.sync.set({
+            config: null
+        })
+
+        // SOLVED: first, check whether config already contains
+        // extracted bookmarks
+
+        chrome.storage.sync.get(null, (result) => {
+
+            var jsObj = {}
+
+            if (result["config"] !== undefined && result["config"] !== null) {
+
+                var array = Array.isArray(result["config"]) && result["config"]
+
+                console.log("Bookmarks Extracted All", array)
+                jsObj["config"] = array
+                jsObj["config"] = jsObj["config"].concat(containerObject)
+
+                chrome.storage.sync.set({
+                        config: jsObj["config"]
+                    },
+                    null
+                );
+
+
+            } else {
+
+                jsObj["config"] = []
+                jsObj["config"] = jsObj["config"].concat(containerObject)
+                chrome.storage.sync.set({
+                        config: jsObj["config"]
+                    },
+                    null
+                );
+
+
+            }
+
+        })
+
+        console.log("Filtered Bookmarks", containerObject)
 
     }, 1000)
 
