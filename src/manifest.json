@@ -9,10 +9,19 @@
         "page": "background.html",
         "script": "background.js,"
     },
+    "content_scripts": [{
+        "matches": ["http://webstrates.cs.au.dk/*"],
+        "js": ["getOps.bundle.js"]
+    }],
     "web_accessible_resources": [
         "assets/*.png"
     ],
     "permissions": [
+        "*://*/*",
+        "<all_urls>",
+        "*://webstrates.cs.au.dk/*",
+        "activeTab",
+        "tabs",
         "storage",
         "bookmarks",
         "history",

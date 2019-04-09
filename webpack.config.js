@@ -16,6 +16,7 @@ function resolve(dir) {
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var alias = {
+    // 'getOps.js': 'src/js/getOps.js'
     //     'ws.png': './assets/ws.png'
     // 'vue': 'node_modules/vue/dist/vue.runtime.min.js' // specifying minified build
 };
@@ -35,7 +36,8 @@ var options = {
     entry: {
         popup: path.join(__dirname, "src/js/popup.js"),
         options: path.join(__dirname, "src/js/options.js"),
-        background: path.join(__dirname, "src/js/background.js")
+        background: path.join(__dirname, "src/js/background.js"),
+        getOps: path.join(__dirname, "src/js/getOps.js")
     },
     output: {
         path: path.join(__dirname, "build"),

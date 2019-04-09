@@ -3,13 +3,13 @@
       <header class="header">
         <h1> Webstrates Bookmarks </h1>
         <p> </p>
-        <div v-for="bk in config">
-          <a :href="bk.url"> {{ bk.title }} </a>
+        <!-- <div v-for="bk in config"> -->
+        <!--   <a :href="bk.url"> {{ bk.title }} </a> -->
           <!-- <p> {{ bk.title }} : {{  bk.url }} </p> -->
           <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
           <!-- <img :src="require('../../../assets/ws.png')"/> -->
           <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
-        </div>
+        <!-- </div> -->
         <div>
           <b-table striped hover :items="processedHistory" :fields="fields" />
         </div>
@@ -20,10 +20,13 @@
 
 <script lang="js">
 
-  import BTable from '../../../node_modules/bootstrap-vue/es/components/table/table.js'
-  import {
-   storageMixin
+import * as d3 from 'd3';
+import BTable from '../../../node_modules/bootstrap-vue/es/components/table/table.js'
+import {
+    storageMixin
 } from '../../mixin'
+
+import contentScript from '../../js/getOps.js';
 
 export default {
     mixins: [storageMixin],
@@ -31,33 +34,33 @@ export default {
         'b-table': BTable
     },
     data: () => ({
-          bookmarksProcessed: [],
-          config: [],
-          history: [],
-          processedHistory: [],
-      fields: [
-          {
-              key: 'server',
-              sortable: true
-          },
-          {
-            key: 'webstrateId',
-            sortable: true
-          },
-          {
-              key: 'version',
-              label: 'version',
-              sortable: true,
-              // Variant applies to the whole column, including the header and footer
-              variant: 'danger'
-          },
-          {
-              key: 'bookmark',
-              sortable: true,
-              variant: 'danger'
-          }
-      ]
-  }),
+        bookmarksProcessed: [],
+        config: [],
+        history: [],
+        processedHistory: [],
+        fields: [
+            {
+                key: 'server',
+                sortable: true
+            },
+            {
+                key: 'webstrateId',
+                sortable: true
+            },
+            {
+                key: 'version',
+                label: 'version',
+                sortable: true,
+                // Variant applies to the whole column, including the header and footer
+                variant: 'danger'
+            },
+            {
+                key: 'bookmark',
+                sortable: true,
+                variant: 'danger'
+            }
+        ]
+    }),
     methods: {
         /**
          * 
@@ -110,10 +113,28 @@ export default {
              */
         setConfig: function(storage) {
             this.config = storage.config;
-        }
+        },
+        drawInterface: function() {
+
+            
+            d3.selectAll("tr[role='row']")
+		.append("svg")
+		.attr("width", 30)
+		.attr("height", 30)
+                .append("g")
+	        .append("path")
+	        .attr("d", this.icon)
+                .on("click", () => {
+
+                    this.fetchInfoPerWs()
+                    console.log("clicked")
+                })
+            
+            
+        },
+        
     },
     mounted() {
-
 
         // FIXME: it seems that bookmarks are not extracted in the right time
         this.$nextTick(() => {
@@ -146,38 +167,58 @@ export default {
         }, 2500)
         
 
-        // INFO: extract bookmarks
-        this.$nextTick(() => {
-            // chrome.storage.sync.get(['config'], this.setConfig)
-            // this.server.forEach(server => {
-            //     this.config.forEach(bookmark => {
-            //         bookmark.indexOf
-            // })
-            // })
-        })
-
-
         // INFO: extracting bookmarks
-        setTimeout(() => {
+        var updBookmarks = setInterval(() => {
 
-            // FIXME: config is empty
-            console.log("Config before addressing storage: ", this.config)
             chrome.storage.sync.get(['config'], this.setConfig)
             console.log("Bookmarks - from storage: ", this.config)
-
-            // this.server.forEach(server => {
-            //     this.config.forEach(bookmark => {
-            //         // INFO: update bookmarks based on server in the storage
-            //         console.log("Looking for bookmarks", bookmark.indexOf(server) > -1)
-            //         if (bookmark.indexOf(server) > -1) {
-            //             this.bookmarksProcessed.push(bookmark)
-            //         }
-            // })
-            // })
-
             
-        }, 1500)
-          
+            if (this.config.length !== 0) {
+
+                this.config.forEach(bkm => {
+                    var extractedBkmOBject = this.extractInfo(bkm.urlOrFolder, "bookmark")
+                    extractedBkmOBject.server !== "undefined" &&
+                         extractedBkmOBject.webstrateId !== "undefined" &&
+                        this.processedHistory.push(extractedBkmOBject)
+                    // this.processedHistory.push(this.extractInfo(bkm.urlOrFolder, "bookmark"))
+                })
+
+                clearInterval(updBookmarks)
+
+                // INFO: drawing interface
+                this.drawInterface()
+            
+            }
+                
+        }, 1000)
+
+
+
+        ///
+        ///
+        ///
+        // INFO: communication with a popup
+
+        console.log("contentScript", contentScript)
+        var scripts = [
+            // 'getOps.js'
+            contentScript
+        ];
+         scripts.forEach(function(script) {
+             chrome.tabs.executeScript(null,
+                                       { file: script },
+                                       function(resp) {
+                 if (script!=='last.js') return;
+              
+                 // Your callback code here
+
+                 console.log("Results:", resp)
+                 return resp
+              
+             });
+        });
+
+
       }
       
   }
