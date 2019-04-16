@@ -37,7 +37,8 @@ var options = {
         popup: path.join(__dirname, "src/js/popup.js"),
         options: path.join(__dirname, "src/js/options.js"),
         background: path.join(__dirname, "src/js/background.js"),
-        getOps: path.join(__dirname, "src/js/getOps.js")
+        getOps: path.join(__dirname, "src/js/getOps.js"),
+        getStructure: path.join(__dirname, "src/js/getStructure.js")
     },
     output: {
         path: path.join(__dirname, "build"),
@@ -49,8 +50,9 @@ var options = {
                 loader: 'vue-loader',
                 options: {
                     loaders: {
-                        'scss': 'vue-style-loader!css-loader!sass-loader',
-                        'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
+                        'css': 'css-loader',
+                        // 'scss': 'vue-style-loader!css-loader!sass-loader',
+                        // 'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
                         'file-loader': 'file-loader'
 
                     },
