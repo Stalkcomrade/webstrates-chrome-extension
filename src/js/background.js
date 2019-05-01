@@ -1,54 +1,9 @@
 chrome.runtime.onInstalled.addListener(function() {
 
-    // INFO: checking whether current tab relates to the webstrates
-    var someVar = {
-        text: 'test',
-        foo: 1,
-        bar: false
-    };
-
-
-    // chrome.tabs.create({
-    //     'url': 'https://stackoverflow.com'
-    // });
-
-
-    // chrome.browserAction.onClicked.addListener(function(tab) {
-
-    // console.log("window", tab)
-
-    // chrome.tabs.create({
-    //         url: 'https://stackoverflow.com',
-    //     },
-    //     function(tab) {}
-    // );
-
-    // chrome.tabs.executeScript({
-    //     code: '(' + function(params) {
-    //         // alert("window", window)
-    //         document.body.insertAdjacentHTML('beforeend',
-    //             '<div style="all:unset; position:fixed; left:0; top:0; right:0; bottom:0;' +
-    //             'background-color:rgba(0,255,0,0.3)">' + params.text + '</div>'
-    //         );
-    //         return {
-    //             success: true,
-    //             html: document.body.innerHTML
-    //         };
-    //     } + ')(' + JSON.stringify(someVar) + ');'
-    // }, function(results) {
-    //     console.log(results[0]);
-    // });
-
-    // });
-
-
-
-
-
-    // SOLVED: read user servers first
+    // read user servers first
     var serversDefined = ["webstrates.cs.au.dk", "webstrates.r2.enst.fr"]
 
-    // INFO: this fun duplicates one in vue mixins
+    // FIXME: this fun duplicates one in vue mixins
     function restore_options() {
 
         chrome.storage.sync.get(null, (servers) => {
@@ -102,20 +57,18 @@ chrome.runtime.onInstalled.addListener(function() {
         serversDefined.forEach(srv => {
 
             bkmExtracted.forEach(bkm => {
-
                 bkm.urlOrFolder.indexOf(srv) > -1 && containerObject.push(bkm)
-
             })
 
         })
 
 
-        // TODO: clean bookmark storage
+        // cleans bookmark storage
         chrome.storage.sync.set({
             config: null
         })
 
-        // SOLVED: first, check whether config already contains
+        // checks whether config already contains
         // extracted bookmarks
 
         chrome.storage.sync.get(null, (result) => {

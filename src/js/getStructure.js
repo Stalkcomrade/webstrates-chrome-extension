@@ -1,22 +1,15 @@
 'use strict';
 
 // get operational history per a webstrate
-
-// TODO: add server
-// TODO: use webstrate.getOps(0, 2)
-// TODO: ask Kristina to change HTTP API
-
+// FIXME: add server
 const getOps = async (webstrateId) => {
 
-    var current = webstrateId
-
-    return fetch("https://webstrates.cs.au.dk/" + current + "/?ops&from=0&to=2")
+    return fetch("https://webstrates.cs.au.dk/" + webstrateId + "/?ops&from=0&to=2")
         .then((html) => {
             return html.json()
         })
         .then((body) => {
-            console.log("Fetched:\n", current)
-            console.log(body[0])
+            console.log("Fetched:\n", webstrateId, body[0])
             return body[0]
         })
 }
@@ -30,25 +23,29 @@ const getOps = async (webstrateId) => {
 const searchCopies = async (input) => {
 
     var target = [],
-        children = [],
-        cpsWs = await getOps(input)
+        children,
+        cpsWs = await getOps(input);
 
     // returns null if undefined
+    // FIXME: 
     if (!cpsWs) {
+        console.log("Inspect", input)
         return null
     }
 
+    // FIXME: add id of the webstrate
+
     children = {
-        value: (typeof cpsWs.create !== "undefined" && typeof cpsWs.create.id !== "undefined" ?
-            cpsWs.create.id :
-            "no copies found"),
-        name: (typeof cpsWs.create !== "undefined" && typeof cpsWs.create.id !== "undefined" ?
+        webstrateId: (typeof cpsWs.create !== "undefined" && typeof cpsWs.create.id !== "undefined" ?
             cpsWs.create.id :
             "no copies found"),
         children: (cpsWs.create.id !== input && await searchCopies(cpsWs.create.id))
     }
 
-    target.push(children)
+    target.push({
+        webstrateId: input,
+        children: children
+    })
     // console.dir(target)
 
     return target
@@ -56,11 +53,11 @@ const searchCopies = async (input) => {
 
 // returns a promise per each webstrate to
 // return a structure later
+// FIXME: var webstrateId = "slimy-cobra-37";
 const getStructure = (webstrateId) => {
 
     return new Promise(async (resolve, reject) => {
 
-        // var webstrateId = "slimy-cobra-37";
         try {
             var str = await searchCopies(webstrateId)
 
@@ -72,7 +69,6 @@ const getStructure = (webstrateId) => {
                 reject()
             }
 
-
         } catch (error) {
             console.log("Rejected", webstrateId)
             reject(error)
@@ -82,7 +78,6 @@ const getStructure = (webstrateId) => {
 }
 
 
-// TODO:
 // 1. send filtered lists of unique webstrates
 // choose only core webstrate server
 // filter undefined and google/search related
@@ -94,14 +89,16 @@ const getStructure = (webstrateId) => {
 // INFO: opens port to listen to messages from the content script
 chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
 
-    console.log("Inside Message Listener")
-    console.log("History in Content Script", JSON.parse(request.history))
     var history = JSON.parse(request.history),
         promisessContainer = [],
         singlePromise,
         responseWebstratesStructure;
 
-    history.forEach(webstrateId => {
+    console.log("Inside Message Listener")
+    console.log("History in Content Script", history)
+
+    console.log("History Sliced", history.slice(0, 15))
+    history.slice(0, 15).forEach(webstrateId => {
 
         singlePromise = getStructure(webstrateId)
         promisessContainer.push(singlePromise)
@@ -109,9 +106,9 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
     })
 
     console.log("Promises are prepared", promisessContainer)
-    console.log("Cutted promises", promisessContainer.slice(0, 5))
+    console.log("Cutted promises", promisessContainer)
 
-    responseWebstratesStructure = await Promise.all(promisessContainer.slice(0, 5))
+    responseWebstratesStructure = await Promise.all(promisessContainer)
         .then((structures) => {
             console.log("Structure building is finished", structures)
             return structures

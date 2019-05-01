@@ -103,18 +103,24 @@ export default {
                 regRes,
                 myRegexp = /^https:\/\/(.*?)\/(.*?)\/(.*?|.*?$)\/?([0-9]+|[a-zA-Z]+)?(.*?|\/)?$/g;
             // myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
+            // ^https:\/\/([a-zA-Z0-9\-\.]*?)\/([a-zA-Z0-9\-\.]*?)\/([0-9]*?|\?v\=[0-9]*?|(.*?\/([0-9]*?)))\/
+
+            // https://webstrates.cs.au.dk/cold-jellyfish-95/?v=3212/
+            // https://webstrates.cs.au.dk/cold-jellyfish-95/12/
+            // https://webstrates.cs.au.dk/cold-jellyfish-95/12/
+            // https://webstrates.cs.au.dk/cold-jellyfish-95/?v=234/
+            // https://webstrates.cs.au.dk/cold-jellyfish-95/smth/234/
             
             var match = myRegexp.exec(myString);
 
             regRes = {
-	        server:  match !== null ? match[1] : "undefined",
+	        server:       match !== null ? match[1] : "undefined",
 	        webstrateId:  match !== null ? match[2]: "undefined",
-                version:  match !== null ? match[3] : "last",
-                bookmark: mode === "history" ? "history" : "bookmark"
+                version:      match !== null ? match[3] : "last",
+                bookmark:     mode === "history" ? "history" : "bookmark"
                 // tag: match[6]
             }
 
-            // console.log(regRes)
             return regRes
         },
         /**
@@ -186,9 +192,8 @@ export default {
                         // with the webstrates structures
                         chrome.runtime.onMessage.addListener(
                             (request, sender, sendResponse) => {
+                                this.saveWebstratesStructure("structures", JSON.parse(request.responseWebstratesStructure))
                                 console.log("Got Response from Content - structure of Webstrates", JSON.parse(request.responseWebstratesStructure))
-                                console.log(request)
-                                console.log(request.responseWebstratesStructure)
                             }
                         );
                         
