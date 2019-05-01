@@ -10,34 +10,16 @@ const getOps = async (webstrateId) => {
 
     var current = webstrateId
 
-    return fetch("https://webstrates.cs.au.dk/" + current + "/?ops")
+    return fetch("https://webstrates.cs.au.dk/" + current + "/?ops&from=0&to=2")
         .then((html) => {
             return html.json()
         })
         .then((body) => {
             console.log("Fetched:\n", current)
-            // var versioningRaw = body[0]
             console.log(body[0])
             return body[0]
         })
 }
-
-// const getOps = async (webstrateId) => {
-
-//     var current = webstrateId
-
-//     // webstrate.getOps("")
-
-//     return fetch("https://webstrates.cs.au.dk/" + current + "/?ops")
-//         .then((html) => {
-//             return html.json()
-//         })
-//         .then((body) => {
-//             console.log("Fetched:\n", current)
-//             var versioningRaw = body
-//             return body
-//         })
-// }
 
 
 /**
@@ -48,13 +30,13 @@ const getOps = async (webstrateId) => {
 const searchCopies = async (input) => {
 
     var target = [],
-        children = []
+        children = [],
+        cpsWs = await getOps(input)
 
-
-    var cpsWs = await getOps(input)
-
-    // var cpsWs = await this.getOpsJsonMixin(input)
-    // console.log("cpsWs = ", cpsWs);
+    // returns null if undefined
+    if (!cpsWs) {
+        return null
+    }
 
     children = {
         value: (typeof cpsWs.create !== "undefined" && typeof cpsWs.create.id !== "undefined" ?
@@ -72,52 +54,73 @@ const searchCopies = async (input) => {
     return target
 };
 
-const getStructure = async (webstrateId) => {
+// returns a promise per each webstrate to
+// return a structure later
+const getStructure = (webstrateId) => {
 
-    // var webstrateId = "slimy-cobra-37";
-    var str = await searchCopies(webstrateId)
+    return new Promise(async (resolve, reject) => {
 
-    console.log(str)
-    return str
+        // var webstrateId = "slimy-cobra-37";
+        try {
+            var str = await searchCopies(webstrateId)
+
+            if (str != null) {
+                console.log("Resolved:", webstrateId)
+                resolve(str)
+            } else {
+                console.log("Rejected", webstrateId)
+                reject()
+            }
+
+
+        } catch (error) {
+            console.log("Rejected", webstrateId)
+            reject(error)
+        }
+    })
 
 }
 
-// console.log("External Object in Content Script", config)
-// alert('Example:' + config);
 
-// var webstrateId = "slimy-cobra-37"
-// getStructure(webstrateId)
+// TODO:
+// 1. send filtered lists of unique webstrates
+// choose only core webstrate server
+// filter undefined and google/search related
+// try exceptions
+// 2. make a promise for every request
+// 3. filter rejected promises
+// 4. send object back to popup
 
 // INFO: opens port to listen to messages from the content script
-// var port = chrome.runtime
-
-chrome.runtime.onMessage.addListener(async (msg) => {
+chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
 
     console.log("Inside Message Listener")
+    console.log("History in Content Script", JSON.parse(request.history))
+    var history = JSON.parse(request.history),
+        promisessContainer = [],
+        singlePromise,
+        responseWebstratesStructure;
 
-    // var value = "ANSWER"
+    history.forEach(webstrateId => {
 
-    // chrome.storage.local.set({
-    //     key: value
-    // }, function() {
-    //     console.log('Value is set to ' + value);
-    // });
+        singlePromise = getStructure(webstrateId)
+        promisessContainer.push(singlePromise)
 
-    var webstrateId = "slimy-cobra-37"
-    var dt = await getStructure(webstrateId)
-
-    // FIXME: make async 
-    chrome.runtime.sendMessage({
-        // answer: "answer to popup"
-        answer: await JSON.stringify(dt)
     })
 
-    // if (msg.question == "Who's there?")
-    //     port.postMessage({
-    //         answer: "Madame"
-    //     });
-    // else if (msg.question == "Madame who?")
-    //     port.postMessage({
-    //         answer: "Madame... Bovary"
-    //     });
+    console.log("Promises are prepared", promisessContainer)
+    console.log("Cutted promises", promisessContainer.slice(0, 5))
+
+    responseWebstratesStructure = await Promise.all(promisessContainer.slice(0, 5))
+        .then((structures) => {
+            console.log("Structure building is finished", structures)
+            return structures
+        })
+
+    console.log("Promises stringified before sending", JSON.stringify(responseWebstratesStructure))
+
+    chrome.runtime.sendMessage({
+        responseWebstratesStructure: await JSON.stringify(responseWebstratesStructure),
+    })
+
 });

@@ -11,6 +11,8 @@ export const storageMixin = {
         // stored in chrome.storage.
         restore_options: function() {
 
+            // return new Promise((resolve, reject) => {
+
             chrome.storage.sync.get(null, (servers) => {
                 Object.values(servers.server).forEach(server => {
                     this.server.push(server) // SOLVED: server is not really array get array of values
@@ -19,12 +21,17 @@ export const storageMixin = {
                 console.log("Restoring Servers", this.server)
 
             })
+
+            // resolve(this.server)
+            // })
+
+
         },
         fetchInfoPerWs: function() {
 
             // const serverUtils = require("#server-utils")
-            var input = "dull-warthog-73"
-            var current = input !== "undefined" ? input : this.selected
+            var input = "dull-warthog-73",
+                current = input !== "undefined" ? input : this.selected;
 
             var fetched = fetch("https://webstrates.cs.au.dk/" + current + "/?ops")
                 .then((html) => {
@@ -37,7 +44,6 @@ export const storageMixin = {
                 })
 
             console.log(fetched)
-
             return fetched
 
         },

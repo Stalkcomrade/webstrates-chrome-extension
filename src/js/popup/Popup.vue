@@ -46,7 +46,7 @@ import {
     storageMixin
 } from '../../mixin'
 
-import contentScript from '../../js/getOps.js';
+// import contentScript from '../../js/getOps.js';
 // import structureScript from '../../js/getStructure.js';
 
 export default {
@@ -99,20 +99,20 @@ export default {
          */
         extractInfo: function(history, mode) {
             
-             var myString = history,
-                 regRes,
-                 myRegexp = /^https:\/\/(.*?)\/(.*?)\/(.*?|.*?$)\/?([0-9]+|[a-zA-Z]+)?(.*?|\/)?$/g;
+            var myString = history,
+                regRes,
+                myRegexp = /^https:\/\/(.*?)\/(.*?)\/(.*?|.*?$)\/?([0-9]+|[a-zA-Z]+)?(.*?|\/)?$/g;
             // myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
-    
+            
             var match = myRegexp.exec(myString);
 
-                regRes = {
-	            server:  match !== null ? match[1] : "undefined",
-	            webstrateId:  match !== null ? match[2]: "undefined",
-                    version:  match !== null ? match[3] : "last",
-                    bookmark: mode === "history" ? "history" : "bookmark"
-                    // tag: match[6]
-                }
+            regRes = {
+	        server:  match !== null ? match[1] : "undefined",
+	        webstrateId:  match !== null ? match[2]: "undefined",
+                version:  match !== null ? match[3] : "last",
+                bookmark: mode === "history" ? "history" : "bookmark"
+                // tag: match[6]
+            }
 
             // console.log(regRes)
             return regRes
@@ -125,41 +125,31 @@ export default {
         
         searchHistory: function(text){
 
+            // FIXME:
+            // this.history = []
+            // return new Promise()
             
-            this.history = []
-
             chrome.history.search({text: "", maxResults: 0, startTime: 0}, (data) => {
-
                 data.forEach((page) => {
-
                     // TODO: push the whole object
                     // FIXME: will ruing the whole mechanism
                     // this.history.push(page.url)
-
                     this.history.push(page)
                 })
                 
             })
             
-            // chrome.history.search({text: text,
-            //                        maxResults: 30000}, (data) => {
-            //                            data.forEach((page) => {
-            //                                // console.log(page.url);
-            //                                this.history.push(page.url)
-            //                            })
-            //                        })
         },
         /**
-             * set our internal state
-             * with the result from the
-             * chrome api call
-             */
+         * set our internal state
+         * with the result from the
+         * chrome api call
+         */
         setConfig: function(storage) {
             this.config = storage.config;
         },
         drawInterface: function() {
 
-            
             d3.selectAll("tr[role='row']")
 		.append("svg")
 		.attr("width", 30)
@@ -168,21 +158,58 @@ export default {
 	        .append("path")
 	        .attr("d", this.icon)
                 .on("click", () => {
-
                     this.fetchInfoPerWs()
                     console.log("clicked")
                 })
             
             
         },
+        // content script execution
+        executeContentScripts: function() {
+
+            var scripts = [
+                "getStructure.bundle.js"
+            ];
+            
+            scripts.forEach((script) => {
+                chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                    chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
+                        
+                        var processedHistory = this.processedHistory,
+                            filteredHistory = processedHistory.map(el => el.webstrateId),
+                            uniqueHistory = Array.from(new Set(filteredHistory));
+                        
+                        console.log("History to send from popup", uniqueHistory)
+                        chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
+
+                        // receiving answer from content script
+                        // with the webstrates structures
+                        chrome.runtime.onMessage.addListener(
+                            (request, sender, sendResponse) => {
+                                console.log("Got Response from Content - structure of Webstrates", JSON.parse(request.responseWebstratesStructure))
+                                console.log(request)
+                                console.log(request.responseWebstratesStructure)
+                            }
+                        );
+                        
+                    });
+                    
+                })
+            })
+            
+        },
+        },
         
-    },
     mounted() {
 
+        // INFO: even though I am messing $watch Vue and promise-based styles
+        // should give it a shot
+        
+        // FIXME: restore options should return a promise
         // FIXME: it seems that bookmarks are not extracted in the right time
         this.$nextTick(() => {
-            this.restore_options()
-            })
+            var optionsRestored = this.restore_options()
+        })
 
         // INFO: search for corresponding links within name of each server
         // as the search query
@@ -191,31 +218,27 @@ export default {
             this.searchHistory(el)
         })
 
+
         // INFO: extracting history
         setTimeout(() => {
             this.history.forEach(element => {
 
                 var el = element.url
-                
-                // SOLVED: fetch list of available servers
-                this.server.forEach(server => {
+                this.server.forEach(server => { // SOLVED: fetch list of available servers
 
                     // TODO: consider visits in a url
-
-                   
                     // Object.assign({searchElement: element}, this.extractInfo(el, "history")).webstrateId == "wicked-wombat-56" &&
                     //     console.log("visits:",
                     //                 chrome.history.getVisits(Object.assign({searchElement: element},
                     //                                                        this.extractInfo(el, "history")).searchElement.url,
                     //                                          (dt) => {console.log(dt)}))
-                    
                     // console.log("inspect this", element)
                     // console.log("inspect this", Object.assign({searchElement: element}, this.extractInfo(el, "history")))
                     el.indexOf(server) > -1 &&
                         el.indexOf("undefined") == -1 &&
                         el.indexOf("google") == -1 &&
                         this.processedHistory.push(Object.assign({searchElement: element}, this.extractInfo(el, "history")))
-                        // this.processedHistory.push({searchElement: element, ...this.extractInfo(el, "history")})
+                    // this.processedHistory.push({searchElement: element, ...this.extractInfo(el, "history")})
 
                 })
                 
@@ -240,7 +263,7 @@ export default {
                         extractedBkmOBject.webstrateId !== "undefined" &&
                         extractedBkmOBject.server.indexOf("google") == -1 &&
                         extractedBkmOBject.server.indexOf("undefined") == -1
-                        this.processedHistory.push(Object.assign({searchElement: {url: null}}, extractedBkmOBject))
+                    this.processedHistory.push(Object.assign({searchElement: {url: null}}, extractedBkmOBject))
                     // this.processedHistory.push(this.extractInfo(bkm.urlOrFolder, "bookmark"))
                 })
 
@@ -248,102 +271,34 @@ export default {
 
                 // INFO: drawing interface
                 this.drawInterface()
-            
-            }
                 
+            }
+            
         }, 1000)
 
 
+        // INFO: instead of rewriting all the funs to
+        // rely on promises, I am temprorarily using Vue watchers
+        // to know, where to start communication
+        // with the content scripts
 
-        // INFO: setting parameters to pass to getStructure script
-        // var config = {somebigobject: 'complicated value'};
-        // chrome.tabs.executeScript(null, {
-        //     code: 'var config = ' + JSON.stringify(config)
-        // }, function() {
-        //     chrome.tabs.executeScript(null, {file: structureScript});
-        //     // chrome.tabs.sendMessage(null, 'whatever value; String, object, whatever');
-        //     chrome.tabs.query({active: true, currentWindow: true}, (tabs) =>  {
-        //     chrome.tabs.sendMessage(tabs[0].id,
-        //                             {type: "getText"},
-        //                             (response) => {
-        //                                 console.log("Message to Content Script is Sent")
-        //                                 console.log("Got a response", response)
-        //                             });
-        // });
-        // });
+        // setup before functions
+        let typingTimer;                // timer identifier
+        let doneTypingInterval = 3000;  // time in ms (5 seconds)
+        var accomplish = () =>  {
+            this.executeContentScripts()
+        }
         
-        // INFO: another way
-        // FIXME: how script is executed
-
-        var scripts = [
-            "getStructure.bundle.js"
-            // "../../js/getStructure.js"
-            // structureScript,
-            // contentScript
-        ];
-        
-        scripts.forEach(function(script) {
-        
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-
-            console.log("TABS", tabs)
-            // chrome.tabs.executeScript(tabs[0].id, {file: script}, function() {
-            chrome.tabs.executeScript(tabs[0].id, {file: script}, function() {
-                chrome.tabs.sendMessage(tabs[0].id, 'whatever value; String, object, whatever');
-
-                //
-                chrome.runtime.onMessage.addListener(
-                    function(request, sender, sendResponse){
-                        // localStorage["total_elements"] = request.total_elements;
-                        console.log("Got Response from Content")
-                    }
-                );
+        this.$watch(
+            (vm) => (vm.processedHistory, Date.now()), val => {
                 
-                });
-            
-        })
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(accomplish, doneTypingInterval);
+                
             })
 
-        
-        // INFO: communication with a popup
-        // console.log("contentScript", contentScript)
-        //      chrome.tabs.executeScript(null,
-        //                                { file: script },
-        //                                function(resp) {
-        //          if (script!=='last.js') return;
-        //                                    // Your callback code here
-        //                                    console.log("accessing content")
-        //          console.log("Results:", resp)
-        //          return resp
-        //      });
-        // });
-
-        // INFO: messaging to content script to start parsing operational history
-        // window.addEventListener('DOMContentLoaded', function () {
-    //     setTimeout(() => {
-    //     chrome.tabs.query({
-    //         active: true,
-    //         currentWindow: true
-    //     }, (tabs) =>  {
-
-    //         chrome.tabs.sendMessage(
-    //         // null,
-    //             tabs[0].id,
-    //         {type: "getText"},
-    //             (response) => {
-    //                 console.log("Message to Content Script is Sent")
-    //                 console.log("Got a response", response)
-    //             // $("#text").text(response);
-    // // });
-    //     });
-    //         });
-
-    //     }, 3000)
-        
-
-      }
-      
-  }
+    }
+}
 </script>
 
 
