@@ -114,9 +114,9 @@ export default {
             var match = myRegexp.exec(myString);
 
             regRes = {
-	        server:       match !== null ? match[1] : "undefined",
-	        webstrateId:  match !== null ? match[2]: "undefined",
-                version:      match !== null ? match[3] : "last",
+	        server:       match !== null     ? match[1]  : "undefined",
+	        webstrateId:  match !== null     ? match[2]  : "undefined",
+                version:      match !== null     ? match[3]  : "last",
                 bookmark:     mode === "history" ? "history" : "bookmark"
                 // tag: match[6]
             }
@@ -180,10 +180,25 @@ export default {
             scripts.forEach((script) => {
                 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                     chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
+
                         
                         var processedHistory = this.processedHistory,
                             filteredHistory = processedHistory.map(el => el.webstrateId),
                             uniqueHistory = Array.from(new Set(filteredHistory));
+
+                        // TODO: do not fetch webstrates, which ids are already in a storage
+                        // FIXME: use local storage instead of global
+                        // https://developer.chrome.com/apps/storage
+                        chrome.storage.sync.get(null, (result) => {
+                            if (result["structures"] != null) {
+
+                                // debugger;
+                                var presented = result["structures"].map(el => el.wsId)
+                                uniqueHistory = uniqueHistory.filter(str => presented.indexOf(str) == -1)
+                                
+                            }
+                        });
+
                         
                         console.log("History to send from popup", uniqueHistory)
                         chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
@@ -192,8 +207,26 @@ export default {
                         // with the webstrates structures
                         chrome.runtime.onMessage.addListener(
                             (request, sender, sendResponse) => {
-                                this.saveWebstratesStructure("structures", JSON.parse(request.responseWebstratesStructure))
-                                console.log("Got Response from Content - structure of Webstrates", JSON.parse(request.responseWebstratesStructure))
+                                
+                                // this.deleteWebstratesStructure("structures")
+                                // filters nulls and undefined
+                                var responseStr = JSON.parse(request.responseWebstratesStructure)
+                                    .filter(ws => {
+	                                return ws != undefined && ws[0].webstrateId != "frontpage" && ws[0].webstrateId != "undefined"
+                                    })
+                                    .map(ws => {
+                                        return {wsId      :  ws[0].webstrateId,
+                                                structure :  ws[0]
+                                               }
+                                    })
+
+                                
+                                this.saveWebstratesStructure("structures", responseStr)
+                                console.log("Got Response from Content - structure of Webstrates", responseStr)
+
+
+                                
+                                
                             }
                         );
                         
@@ -201,7 +234,6 @@ export default {
                     
                 })
             })
-            
         },
         },
         
@@ -274,7 +306,6 @@ export default {
 
                 clearInterval(updBookmarks)
 
-                // INFO: drawing interface
                 this.drawInterface()
                 
             }
@@ -282,14 +313,14 @@ export default {
         }, 1000)
 
 
-        // INFO: instead of rewriting all the funs to
+        // instead of rewriting all the funs to
         // rely on promises, I am temprorarily using Vue watchers
         // to know, where to start communication
         // with the content scripts
 
         // setup before functions
-        let typingTimer;                // timer identifier
-        let doneTypingInterval = 3000;  // time in ms (5 seconds)
+        let typingTimer,                // timer identifier
+            doneTypingInterval = 3000;  // time in ms (5 seconds)
         var accomplish = () =>  {
             this.executeContentScripts()
         }

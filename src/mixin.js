@@ -5,6 +5,19 @@ export const storageMixin = {
     }),
     methods: {
         /**
+         * cleans the webstratesStructure storage
+         * @param {any} storageName
+         * @return {null} 
+         */
+        deleteWebstratesStructure: function(storageName = "structures") {
+
+            var obj = {};
+            obj[storageName] = null;
+
+            chrome.storage.sync.set(obj)
+            console.log("Webstrates Structure is Cleaned")
+        },
+        /**
          * checks whether config already contains
          * extracted structures
          * @param {any} storageName
@@ -13,26 +26,37 @@ export const storageMixin = {
          */
         saveWebstratesStructure: function(storageName, structuresObject) {
 
-            // TODO: in case structuresObject already contains one of the
+            // in case structuresObject already contains one of the
             // ids of the webstrate, skip it
 
             var array,
+                structuresObjectFiltered,
                 jsObj = {};
-            // fnObj = {};
 
             return new Promise((resolve, reject) => {
 
                 chrome.storage.sync.get(null, (result) => {
 
+                    // checks, if storage contains info
                     if (result[storageName] !== undefined && result[storageName] !== null) {
 
                         array = Array.isArray(result[storageName]) && result[storageName]
-                        console.log("Strcture Objects is Extracted", array)
+                        console.log("Strcture Objects are Extracted", array)
+
+
+                        // checks existing keys in the storage
+                        // if they are present, skip them
+                        // list fo wsIds in storage
+                        var ar = array.map(ws => ws.wsId)
+
+                        // looking for unrepresented webstrates
+                        structuresObjectFiltered = structuresObject.filter(el => {
+                            return ar.indexOf(el.wsId) == -1
+                        })
 
                         jsObj[storageName] = array
-                        jsObj[storageName] = jsObj[storageName].concat(structuresObject)
+                        jsObj[storageName] = jsObj[storageName].concat(structuresObjectFiltered)
 
-                        // fnObj[storageName] = jsObj[storageName]
                         chrome.storage.sync.set(jsObj, null);
 
                     } else {
@@ -40,7 +64,6 @@ export const storageMixin = {
                         jsObj[storageName] = []
                         jsObj[storageName] = jsObj[storageName].concat(structuresObject)
 
-                        // fnObj[storageName] = jsObj[storageName]
                         chrome.storage.sync.set(jsObj, null);
 
                     }
@@ -48,26 +71,19 @@ export const storageMixin = {
             })
         },
 
-        // SOLVED: list of default servers
-        // SOLVED: use this func from mixins only
+        // list of default servers
+        // use this fun from mixins only
         // Restores select box and checkbox state using the preferences
         // stored in chrome.storage.
         restore_options: function() {
 
-            // return new Promise((resolve, reject) => {
-
             chrome.storage.sync.get(null, (servers) => {
                 Object.values(servers.server).forEach(server => {
                     this.server.push(server) // SOLVED: server is not really array get array of values
-                    // console.log(this.server)
                 })
                 console.log("Restoring Servers", this.server)
 
             })
-
-            // resolve(this.server)
-            // })
-
 
         },
         fetchInfoPerWs: function() {

@@ -1,6 +1,6 @@
-* TODO Create storage for webstrates structures
+* DONE Create storage for webstrates structures
+* TODO use local storage instead of global
 * TODO Figure out the way of assembling webstrates into meaningful projects
-
 * test
 
 #+begin_src js     '"*Javascript REPL*"'
