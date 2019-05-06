@@ -14,7 +14,7 @@ export const storageMixin = {
             var obj = {};
             obj[storageName] = null;
 
-            chrome.storage.sync.set(obj)
+            chrome.storage.local.set(obj)
             console.log("Webstrates Structure is Cleaned")
         },
         /**
@@ -102,12 +102,12 @@ export const storageMixin = {
                     if (ws && wsNest) {
 
                         if (ws.wsId != wsNest.wsId) { // exlcluding webstrateId from the upper scope
-                            // ws.wsId  - uniting those webstrates
+                            // wsNest  - uniting those webstrates
                             // under wsNest.structure.children.webstrateId
                             // first child == webstrate Id to unite webstrates as a project
                             if (ws.wsId == wsNest.structure.children.webstrateId) {
                                 console.log(true, ws.wsId)
-                                ws.project = ws.wsId
+                                wsNest.project = ws.wsId
                             }
                         }
                     }

@@ -3,12 +3,14 @@
   <header class="header">
     <h1> Webstrates Projects </h1>
     
-    <div class="grid-container">
+    <button v-on:click="deleteWebstratesStructure">Delete Structure Storage</button>
+    
+    <!-- <div class="grid-container"> -->
       
-      <div class="sidebar">
-        <li> bookmarks </li>
-        <li> history </li>
-      </div>
+      <!-- <div class="sidebar"> -->
+      <!--   <li> bookmarks </li> -->
+      <!--   <li> history </li> -->
+      <!-- </div> -->
       
       <div class="main">
         
@@ -22,14 +24,20 @@
           <!-- </div> -->
         <div>
           <!-- <b-table striped hover :items="processedHistory" :fields="fields"> -->
-            
+
+            <div>
             <b-card no-body>
-              <b-tabs v-model="tabIndex" card>
-                <b-tab title="Tab 1" :title-link-class="linkClass(0)">Tab Contents 1</b-tab>
-                <b-tab title="Tab 2" :title-link-class="linkClass(1)">Tab Contents 2</b-tab>
-                <b-tab title="Tab 3" :title-link-class="linkClass(2)">Tab Contents 3</b-tab>
+              <b-tabs card>
+                <b-tab no-body v-for="(value, name) in projects" :title="name">
+                  <b-table striped hover :items="value" :fields="fields">
+                    <template slot="link" slot-scope="row">
+                      <b-link :href="row.item.searchElement.url">Link</b-link>
+                    </template>
+                  </b-table>
+                </b-tab>
               </b-tabs>
             </b-card>
+            </div>
 
             
             <b-table striped hover :items="finalHistory" :fields="fields">
@@ -46,7 +54,7 @@
         </div>
 
         </div>
-        </div>
+        <!-- </div> -->
         
       </header>
   </div>
@@ -61,6 +69,11 @@ import BLink from '../../../node_modules/bootstrap-vue/es/components/link/link.j
 import BCard from '../../../node_modules/bootstrap-vue/es/components/card/card.js'
 import BTab from '../../../node_modules/bootstrap-vue/es/components/tabs/tab.js' // FIXME: might import index instead
 import BTabs from '../../../node_modules/bootstrap-vue/es/components/tabs/tabs.js' // FIXME: might import index instead
+
+// app.js
+import '../../../node_modules/bootstrap/dist/css/bootstrap.css'
+import '../../../node_modules/bootstrap-vue/dist/bootstrap-vue.css'
+
 import {
     storageMixin
 } from '../../mixin'
@@ -83,6 +96,7 @@ export default {
         history: [],
         processedHistory: [],
         finalHistory: [], // history object for rendering
+        projects: {}, // building projects in tabs
         arrCheck: [],
         fields: [
             'link',
@@ -219,31 +233,50 @@ export default {
 
             var scripts = [
                 "getStructure.bundle.js"
-            ];
+            ],
+                flag = false; // content script execution is disabled by default
             
             scripts.forEach((script) => {
                 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-                    chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
 
+
+                    // TODO: do not fetch webstrates, which ids are already in a storage
+                    // uses local storage instead of global
+                    // https://developer.chrome.com/apps/storage
+                    chrome.storage.local.get(null, (result) => {
+                        if (result["structures"] != null) { // structure storage exists
+
+                            var projects = this.uniteProjects(result["structures"])
+                            console.log("Accessing structure storage:", result["structures"])
+                            console.log("Projects !", projects)
+
+                            // making projects considering a structure
+                            var ttprj = {}
+                            projects.filter(el => { if (el.project) {return el}})
+                                .forEach(el => {
+                                    // el.project
+                                    ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
+                                })
+                            
+                            this.projects = ttprj
+                            console.log("ttprj", ttprj)
+
+                        } else { // structure storage is empty
+                            flag = true;
+                            console.log("Structure storage is empty")
+                        }
+                    });
+                    
+
+                    if (flag == true) {
                         
+                        console.log("Executing content script")
+                        chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
+
                         var processedHistory = this.processedHistory,
                             filteredHistory = processedHistory.map(el => el.webstrateId),
                             uniqueHistory = Array.from(new Set(filteredHistory));
 
-                        // TODO: do not fetch webstrates, which ids are already in a storage
-                        // FIXME: use local storage instead of global
-                        // https://developer.chrome.com/apps/storage
-                        chrome.storage.local.get(null, (result) => {
-                            if (result["structures"] != null) {
-
-                                // debugger;
-                                var presented = result["structures"].map(el => el.wsId)
-                                uniqueHistory = uniqueHistory.filter(str => presented.indexOf(str) == -1)
-                                
-                            }
-                        });
-
-                        
                         console.log("History to send from popup", uniqueHistory)
                         chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
 
@@ -276,7 +309,8 @@ export default {
                             }
                         );
                         
-                    });
+                        });
+                    }
                     
                 })
             })
@@ -399,7 +433,6 @@ export default {
 
             // TODO: group entities with equal webstrateId in together
             // except those with structure Projects
-
             
             console.log(this.finalHistory, "Final History")
         }
