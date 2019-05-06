@@ -1,31 +1,47 @@
 <template>
-  <div id="app">
-      <header class="header">
-        <h1> Webstrates Bookmarks </h1>
-
-        <div class="grid-container">
-
-          <div class="sidebar">
-            <li> navig1 </li>
-            <li> navig2 </li>
-            </div>
-          
-          <div class="main">
-          
+<div id="app">
+  <header class="header">
+    <h1> Webstrates Projects </h1>
+    
+    <div class="grid-container">
+      
+      <div class="sidebar">
+        <li> bookmarks </li>
+        <li> history </li>
+      </div>
+      
+      <div class="main">
+        
         <p> </p>
         <!-- <div v-for="bk in config"> -->
-        <!--   <a :href="bk.url"> {{ bk.title }} </a> -->
+          <!--   <a :href="bk.url"> {{ bk.title }} </a> -->
           <!-- <p> {{ bk.title }} : {{  bk.url }} </p> -->
           <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
           <!-- <img :src="require('../../../assets/ws.png')"/> -->
           <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
-        <!-- </div> -->
+          <!-- </div> -->
         <div>
-          <b-table striped hover :items="processedHistory" :fields="fields">
+          <!-- <b-table striped hover :items="processedHistory" :fields="fields"> -->
+            
+            <b-card no-body>
+              <b-tabs v-model="tabIndex" card>
+                <b-tab title="Tab 1" :title-link-class="linkClass(0)">Tab Contents 1</b-tab>
+                <b-tab title="Tab 2" :title-link-class="linkClass(1)">Tab Contents 2</b-tab>
+                <b-tab title="Tab 3" :title-link-class="linkClass(2)">Tab Contents 3</b-tab>
+              </b-tabs>
+            </b-card>
+
+            
+            <b-table striped hover :items="finalHistory" :fields="fields">
+            
             <template slot="link" slot-scope="row">
-               <b-link :href="row.item.searchElement.url">Link</b-link>
-              <!-- {{ row.item.searchElement ? row.item.searchElement.url : "" }} -->
+              <b-link :href="row.item.searchElement.url">Link</b-link>
             </template>
+
+            <!-- <template slot="group" slot-scope="row"> -->
+              <!-- {{ row.item.first }} {{ row.item.last }} -->
+            <!-- </template> -->
+            
             </b-table>
         </div>
 
@@ -42,6 +58,9 @@
 import * as d3 from 'd3';
 import BTable from '../../../node_modules/bootstrap-vue/es/components/table/table.js'
 import BLink from '../../../node_modules/bootstrap-vue/es/components/link/link.js'
+import BCard from '../../../node_modules/bootstrap-vue/es/components/card/card.js'
+import BTab from '../../../node_modules/bootstrap-vue/es/components/tabs/tab.js' // FIXME: might import index instead
+import BTabs from '../../../node_modules/bootstrap-vue/es/components/tabs/tabs.js' // FIXME: might import index instead
 import {
     storageMixin
 } from '../../mixin'
@@ -53,13 +72,18 @@ export default {
     mixins: [storageMixin],
     components: {
         'b-table': BTable,
-        'b-link': BLink
+        'b-link' : BLink,
+        'b-card' : BCard,
+        'b-tabs' : BTabs,
+        'b-tab'  : BTab,
     },
     data: () => ({
         bookmarksProcessed: [],
-        config: [],
+        config: [], // fetching configuration from storage
         history: [],
         processedHistory: [],
+        finalHistory: [], // history object for rendering
+        arrCheck: [],
         fields: [
             'link',
             {
@@ -83,7 +107,8 @@ export default {
                 variant: 'danger'
             },
             {
-                key: 'searchElement.visitCount',
+                // key: 'searchElement.visitCount',
+                key: 'visits',
                 label: 'visits',
                 sortable: true,
                 variant: 'danger'
@@ -101,25 +126,44 @@ export default {
             
             var myString = history,
                 regRes,
-                myRegexp = /^https:\/\/(.*?)\/(.*?)\/(.*?|.*?$)\/?([0-9]+|[a-zA-Z]+)?(.*?|\/)?$/g;
-            // myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
-            // ^https:\/\/([a-zA-Z0-9\-\.]*?)\/([a-zA-Z0-9\-\.]*?)\/([0-9]*?|\?v\=[0-9]*?|(.*?\/([0-9]*?)))\/
+                myRegexp = /^https:\/\/(?<server>[a-zA-Z0-9\-\.]*?)\/(?<webstrateId>[a-zA-Z0-9\-\.]*?)\/(((?<version>[0-9]*?)|\?v\=(?<versionPlus>[0-9]*?)|\?tag\=(?<tag>[a-zA-Z0-9]*?))\/$|$)?/g,
+                match = myRegexp.exec(myString);
 
+            // https://webstrates.cs.au.dk/calm-bat-91/?tag=lastTag/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/?v=3212/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/12/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/12/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/?v=234/
+            // https://webstrates.cs.au.dk/cold-jellyfish-95/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/smth/234/
-            
-            var match = myRegexp.exec(myString);
+            // debugger;
+            // window = this
+            if (!match) {
+                
+                this.arrCheck.push(myString)
+                
+                console.group("new")
+                console.log(myString)
+                console.groupEnd("new")
+                
+                regRes = {server: "undefined", webstrateId: "undefined", version: "undefined", bookmark: "history"}
+                
+            } else {
 
-            regRes = {
-	        server:       match !== null     ? match[1]  : "undefined",
-	        webstrateId:  match !== null     ? match[2]  : "undefined",
-                version:      match !== null     ? match[3]  : "last",
-                bookmark:     mode === "history" ? "history" : "bookmark"
-                // tag: match[6]
+                match.groups.tag && console.log(match.groups.tag)
+                
+                regRes = {
+	            server:       match.groups.server          ? match.groups.server       : "undefined",
+	            webstrateId:  match.groups.webstrateId     ? match.groups.webstrateId  : "undefined",
+                    version:      match.groups.version         ? match.groups.version      : match.groups.versionPlus
+                        ? match.groups.versionPlus
+                        : match.groups.tag,
+                    bookmark:     mode === "history"           ? "history" : "bookmark"
+                }
+                
             }
+
+            
 
             return regRes
         },
@@ -189,7 +233,7 @@ export default {
                         // TODO: do not fetch webstrates, which ids are already in a storage
                         // FIXME: use local storage instead of global
                         // https://developer.chrome.com/apps/storage
-                        chrome.storage.sync.get(null, (result) => {
+                        chrome.storage.local.get(null, (result) => {
                             if (result["structures"] != null) {
 
                                 // debugger;
@@ -210,6 +254,10 @@ export default {
                                 
                                 // this.deleteWebstratesStructure("structures")
                                 // filters nulls and undefined
+
+                                var projects = this.uniteProjects(JSON.parse(request.responseWebstratesStructure))
+                                console.log("Projects: ", projects)
+                                
                                 var responseStr = JSON.parse(request.responseWebstratesStructure)
                                     .filter(ws => {
 	                                return ws != undefined && ws[0].webstrateId != "frontpage" && ws[0].webstrateId != "undefined"
@@ -224,8 +272,6 @@ export default {
                                 this.saveWebstratesStructure("structures", responseStr)
                                 console.log("Got Response from Content - structure of Webstrates", responseStr)
 
-
-                                
                                 
                             }
                         );
@@ -234,6 +280,34 @@ export default {
                     
                 })
             })
+        },
+        // use to group similar entities (composite key distinguishes bookmarks, versions, tags and servers) to count visits
+        aggregateHistory: function(processedHistory) {
+            
+            // x - every element
+            var groupBy = function(xs, key) {
+                
+                return xs.reduce(function(rv, x) {
+                    
+                    // makes a composite key
+                    key = String(x.webstrateId) + String(x.server) + String(x.version) + String(x.bookmark);
+                    
+                    // (rv[key] = rv[key] || []).push(x);
+                    rv[key] = rv[key] || {arr: [], visits: 0, bookmark: x.bookmark, server: x.server, version: x.version, webstrateId: x.webstrateId, searchElement: x.searchElement}
+                    rv[key].arr.push(x)
+                    rv[key].visits += x.searchElement.visitCount 
+                    
+                    return rv;
+                    
+                }, {});
+            };
+
+            processedHistory = groupBy(processedHistory, "webstrateId")
+            // FIXME:
+            Object.keys(processedHistory).forEach(el => processedHistory[el].arr = null) // 
+            var fnl = Object.keys(processedHistory).map(el => { try { return processedHistory[el] } catch(error) { return null} })
+            return fnl
+
         },
         },
         
@@ -261,30 +335,25 @@ export default {
             this.history.forEach(element => {
 
                 var el = element.url
-                this.server.forEach(server => { // SOLVED: fetch list of available servers
+                this.server.forEach(server => { // fetch list of available servers
 
-                    // TODO: consider visits in a url
-                    // Object.assign({searchElement: element}, this.extractInfo(el, "history")).webstrateId == "wicked-wombat-56" &&
-                    //     console.log("visits:",
-                    //                 chrome.history.getVisits(Object.assign({searchElement: element},
-                    //                                                        this.extractInfo(el, "history")).searchElement.url,
-                    //                                          (dt) => {console.log(dt)}))
-                    // console.log("inspect this", element)
-                    // console.log("inspect this", Object.assign({searchElement: element}, this.extractInfo(el, "history")))
                     el.indexOf(server) > -1 &&
                         el.indexOf("undefined") == -1 &&
                         el.indexOf("google") == -1 &&
                         this.processedHistory.push(Object.assign({searchElement: element}, this.extractInfo(el, "history")))
-                    // this.processedHistory.push({searchElement: element, ...this.extractInfo(el, "history")})
 
                 })
                 
             })
 
             console.log("Processed History: ", this.processedHistory)
+
+            // TODO: group item
             
         }, 2500)
-        
+
+
+ 
 
         // INFO: extracting bookmarks
         var updBookmarks = setInterval(() => {
@@ -294,14 +363,15 @@ export default {
             
             if (this.config.length !== 0) {
 
+                // FIXME: get rid of undefined and nulls
+                // FIXME: it seems like this is the source for duplicates across history entities
                 this.config.forEach(bkm => {
                     var extractedBkmOBject = this.extractInfo(bkm.urlOrFolder, "bookmark")
-                    extractedBkmOBject.server !== "undefined" &&
-                        extractedBkmOBject.webstrateId !== "undefined" &&
+                    extractedBkmOBject.server != "undefined" &&
+                        extractedBkmOBject.webstrateId != "undefined" &&
                         extractedBkmOBject.server.indexOf("google") == -1 &&
                         extractedBkmOBject.server.indexOf("undefined") == -1
                     this.processedHistory.push(Object.assign({searchElement: {url: null}}, extractedBkmOBject))
-                    // this.processedHistory.push(this.extractInfo(bkm.urlOrFolder, "bookmark"))
                 })
 
                 clearInterval(updBookmarks)
@@ -318,11 +388,20 @@ export default {
         // to know, where to start communication
         // with the content scripts
 
+        // use this watcher to construct aggregate object for rendering
+
         // setup before functions
         let typingTimer,                // timer identifier
             doneTypingInterval = 3000;  // time in ms (5 seconds)
         var accomplish = () =>  {
             this.executeContentScripts()
+            this.finalHistory = this.aggregateHistory(this.processedHistory)
+
+            // TODO: group entities with equal webstrateId in together
+            // except those with structure Projects
+
+            
+            console.log(this.finalHistory, "Final History")
         }
         
         this.$watch(

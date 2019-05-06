@@ -35,7 +35,7 @@ export const storageMixin = {
 
             return new Promise((resolve, reject) => {
 
-                chrome.storage.sync.get(null, (result) => {
+                chrome.storage.local.get(null, (result) => {
 
                     // checks, if storage contains info
                     if (result[storageName] !== undefined && result[storageName] !== null) {
@@ -57,14 +57,14 @@ export const storageMixin = {
                         jsObj[storageName] = array
                         jsObj[storageName] = jsObj[storageName].concat(structuresObjectFiltered)
 
-                        chrome.storage.sync.set(jsObj, null);
+                        chrome.storage.local.set(jsObj, null);
 
                     } else {
 
                         jsObj[storageName] = []
                         jsObj[storageName] = jsObj[storageName].concat(structuresObject)
 
-                        chrome.storage.sync.set(jsObj, null);
+                        chrome.storage.local.set(jsObj, null);
 
                     }
                 })
@@ -84,8 +84,40 @@ export const storageMixin = {
                 console.log("Restoring Servers", this.server)
 
             })
-
         },
+
+        // TODO:
+        // use to inspect structure and group webstrates into projects
+        // based on the first child in structure
+        // this way, if number of webstrates have the same parent
+        // they are groupped into one project
+        uniteProjects: function(processedStructures) {
+
+            var temp1 = processedStructures
+
+            temp1.forEach(ws => {
+                temp1.forEach(wsNest => {
+
+                    // FIXME: nested if hell
+                    if (ws && wsNest) {
+
+                        if (ws.wsId != wsNest.wsId) { // exlcluding webstrateId from the upper scope
+                            // ws.wsId  - uniting those webstrates
+                            // under wsNest.structure.children.webstrateId
+                            // first child == webstrate Id to unite webstrates as a project
+                            if (ws.wsId == wsNest.structure.children.webstrateId) {
+                                console.log(true, ws.wsId)
+                                ws.project = ws.wsId
+                            }
+                        }
+                    }
+
+                })
+            })
+
+            return temp1
+        },
+
         fetchInfoPerWs: function() {
 
             // const serverUtils = require("#server-utils")
