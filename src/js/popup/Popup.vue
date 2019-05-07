@@ -1,56 +1,64 @@
 <template>
 <div id="app">
   <header class="header">
-    <h1> Webstrates Projects </h1>
+    <h1 align="center"> Webstrates Projects </h1>
     
     <button v-on:click="deleteWebstratesStructure">Delete Structure Storage</button>
+    <br>
+    <br>
     
     <!-- <div class="grid-container"> -->
-      
       <!-- <div class="sidebar"> -->
-      <!--   <li> bookmarks </li> -->
-      <!--   <li> history </li> -->
-      <!-- </div> -->
+        <!--   <li> bookmarks </li> -->
+        <!--   <li> history </li> -->
+        <!-- </div> -->
       
       <div class="main">
         
-        <p> </p>
-        <!-- <div v-for="bk in config"> -->
-          <!--   <a :href="bk.url"> {{ bk.title }} </a> -->
-          <!-- <p> {{ bk.title }} : {{  bk.url }} </p> -->
-          <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
-          <!-- <img :src="require('../../../assets/ws.png')"/> -->
-          <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
-          <!-- </div> -->
+        <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
+        <!-- <img :src="require('../../../assets/ws.png')"/> -->
+        <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
         <div>
           <!-- <b-table striped hover :items="processedHistory" :fields="fields"> -->
-
+            
+            <!-- projects with branching -->
             <div>
-            <b-card no-body>
-              <b-tabs card>
-                <b-tab no-body v-for="(value, name) in projects" :title="name">
-                  <b-table striped hover :items="value" :fields="fields">
-                    <template slot="link" slot-scope="row">
-                      <b-link :href="row.item.searchElement.url">Link</b-link>
-                    </template>
-                  </b-table>
-                </b-tab>
-              </b-tabs>
-            </b-card>
+              <b-card no-body>
+                <b-tabs card>
+                  <b-tab no-body v-for="(value, name) in projects" :title="name">
+                    <b-table striped hover :items="value" :fields="fields">
+                      <template slot="link" slot-scope="row">
+                        <b-link :href="row.item.searchElement.url">Link</b-link>
+                      </template>
+                    </b-table>
+                  </b-tab>
+                </b-tabs>
+              </b-card>
             </div>
-
             
-            <b-table striped hover :items="finalHistory" :fields="fields">
             
-            <template slot="link" slot-scope="row">
-              <b-link :href="row.item.searchElement.url">Link</b-link>
-            </template>
-
-            <!-- <template slot="group" slot-scope="row"> -->
-              <!-- {{ row.item.first }} {{ row.item.last }} -->
-            <!-- </template> -->
+            <!-- projects without branching -->
+            <div>
+              <b-card no-body>
+                <b-tabs card>
+                  <b-tab no-body v-for="(value, name) in finestHistory" :title="name">
+                    <b-table striped hover :items="value" :fields="fields">
+                      <template slot="link" slot-scope="row">
+                        <b-link :href="row.item.searchElement.url">Link</b-link>
+                      </template>
+                    </b-table>
+                  </b-tab>
+                </b-tabs>
+              </b-card>
+            </div>
             
-            </b-table>
+            <!-- old rendering - all-together -->
+            <!-- <b-table striped hover :items="finalHistory" :fields="fields"> -->
+            <!--   <template slot="link" slot-scope="row"> -->
+            <!--     <b-link :href="row.item.searchElement.url">Link</b-link> -->
+            <!--   </template> -->
+            <!-- </b-table> -->
+            
         </div>
 
         </div>
@@ -64,13 +72,13 @@
 <script lang="js">
 
 import * as d3 from 'd3';
+
 import BTable from '../../../node_modules/bootstrap-vue/es/components/table/table.js'
 import BLink from '../../../node_modules/bootstrap-vue/es/components/link/link.js'
 import BCard from '../../../node_modules/bootstrap-vue/es/components/card/card.js'
-import BTab from '../../../node_modules/bootstrap-vue/es/components/tabs/tab.js' // FIXME: might import index instead
-import BTabs from '../../../node_modules/bootstrap-vue/es/components/tabs/tabs.js' // FIXME: might import index instead
+import BTab from '../../../node_modules/bootstrap-vue/es/components/tabs/tab.js'
+import BTabs from '../../../node_modules/bootstrap-vue/es/components/tabs/tabs.js'
 
-// app.js
 import '../../../node_modules/bootstrap/dist/css/bootstrap.css'
 import '../../../node_modules/bootstrap-vue/dist/bootstrap-vue.css'
 
@@ -96,6 +104,7 @@ export default {
         history: [],
         processedHistory: [],
         finalHistory: [], // history object for rendering
+        finestHistory: [], // FIXME: temporal storage for histories
         projects: {}, // building projects in tabs
         arrCheck: [],
         fields: [
@@ -150,15 +159,14 @@ export default {
             // https://webstrates.cs.au.dk/cold-jellyfish-95/?v=234/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/
             // https://webstrates.cs.au.dk/cold-jellyfish-95/smth/234/
-            // debugger;
-            // window = this
+            
             if (!match) {
                 
                 this.arrCheck.push(myString)
                 
-                console.group("new")
+                console.group("regexp")
                 console.log(myString)
-                console.groupEnd("new")
+                console.groupEnd("regexp")
                 
                 regRes = {server: "undefined", webstrateId: "undefined", version: "undefined", bookmark: "history"}
                 
@@ -246,11 +254,12 @@ export default {
                     chrome.storage.local.get(null, (result) => {
                         if (result["structures"] != null) { // structure storage exists
 
+                            
                             var projects = this.uniteProjects(result["structures"])
                             console.log("Accessing structure storage:", result["structures"])
                             console.log("Projects !", projects)
 
-                            // making projects considering a structure
+                            // making projects considering their structures
                             var ttprj = {}
                             projects.filter(el => { if (el.project) {return el}})
                                 .forEach(el => {
@@ -319,6 +328,7 @@ export default {
         aggregateHistory: function(processedHistory) {
             
             // x - every element
+            // used to provide aggregate counts and get rid of the duplicates
             var groupBy = function(xs, key) {
                 
                 return xs.reduce(function(rv, x) {
@@ -336,11 +346,30 @@ export default {
                 }, {});
             };
 
-            processedHistory = groupBy(processedHistory, "webstrateId")
+
+            // used to make project structure WITHOUT taking structure
+            // into account
+            var groupByProjects = function(xs, key) {
+                return xs.reduce(function(rv, x) {
+                    
+                    key = String(x.webstrateId);
+                    (rv[key] = rv[key] || []).push(x);
+                    
+                    return rv;
+                }, {});
+            };
+
+
             // FIXME:
-            Object.keys(processedHistory).forEach(el => processedHistory[el].arr = null) // 
-            var fnl = Object.keys(processedHistory).map(el => { try { return processedHistory[el] } catch(error) { return null} })
-            return fnl
+            var processedHistoryMutated = groupBy(processedHistory, "webstrateId")
+            Object.keys(processedHistoryMutated).forEach(el => processedHistoryMutated[el].arr = null) //
+            var fnl = Object.keys(processedHistoryMutated).map(el => { try { return processedHistoryMutated[el] } catch(error) { return null} });
+
+            var grpProjects = groupByProjects(processedHistory, "webstrateId");
+
+            
+            
+            return [fnl, grpProjects]
 
         },
         },
@@ -429,11 +458,28 @@ export default {
             doneTypingInterval = 3000;  // time in ms (5 seconds)
         var accomplish = () =>  {
             this.executeContentScripts()
-            this.finalHistory = this.aggregateHistory(this.processedHistory)
 
-            // TODO: group entities with equal webstrateId in together
-            // except those with structure Projects
+            // making projects WITHOUT considering their structure
+            var [projectsOld, projectsNew] = this.aggregateHistory(this.processedHistory);
+                // ttprj = {};
             
+            // projects.forEach(el => {
+            //     // el.project
+            //     ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
+            // })
+            // console.log("ttprj", ttprj)
+            // console.log(projectsOld, projectsNew, "Old - New")
+
+            // FIXME: interfering with old ways of making projects
+            // old way
+            this.finalHistory = projectsOld
+            // new way
+            this.finestHistory = projectsNew
+            
+            // TODO: group entities with equal webstrateId in together
+            // TODO: except those with structure Projects
+
+            console.log(this.finestHistory, "Finest History")
             console.log(this.finalHistory, "Final History")
         }
         
