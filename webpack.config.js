@@ -34,6 +34,7 @@ if (fileSystem.existsSync(secretsPath)) {
 
 var options = {
     entry: {
+        ws: path.join(__dirname, "assets/ws.png"),
         popup: path.join(__dirname, "src/js/popup.js"),
         options: path.join(__dirname, "src/js/options.js"),
         background: path.join(__dirname, "src/js/background.js"),

@@ -3,39 +3,24 @@
 <div id="options">
   <header class="header">
     <h1> Options </h1>
+      <svg width="12" height="12" id="icn" :ref="icn"></svg>
   </header>
-  <span>Add New Webstrates Server</span>
+  <span>Add New Webstrate Server</span>
   <br>
-  <textarea v-model="server" placeholder="add server"></textarea>
+  <textarea v-model="serverAdd" placeholder="add server"></textarea>
   <br>
   <p style="white-space: pre-line;"> {{ status }} </p>
   
   <br>
-  <button @click="save_options">Save Server</button>
+  <button @click="saveOptions">Save Server</button>
   <button @click="restore_options">Load Saved Servers</button>
-  <button @click="delete_options">Delete Saved Servers</button>
+  <button @click="deleteOptions">Delete Saved Servers</button>
 
   <br>
+  
   <ul v-for="srv in server">
     <li> {{ srv }} </li>
   </ul>
-  
-  <br>
-  <br>
-  
-  <select v-model="selected">
-    <option disabled value=""> Select Grouping </option>
-      <option v-for="option in options"> {{ option }} </option>
-  </select>
-  <span> Selected: {{ selected }} </span>
-
-  <svg width="120" height="120" id="icn" :ref="icn">
-    <!-- <a :ref="ref"> -->
-      </svg>
-
-  <br>
-
-
   </div> 
   
 </template>
@@ -52,64 +37,49 @@ export default {
     mixins: [storageMixin],
     data: () => ({
         selected: "",
-        // server: [],
-        icon: '',
-        // serverReact: [],
         status: "unsaved",
-        options: ["by server", "by webstrate"]
+        icon: '',
+        server: [],
+        serverAdd: '',
     }),
-    computed: {
+    // computed: {
         // server() {return serverReact}
-    },
+    // },
     methods: {
-
-        delete_options: function() {
-
+         // deletes existing servers 
+        deleteOptions: function() {
             var jsObj = {}
             jsObj["server"] = []
-                        
             chrome.storage.sync.set(jsObj, () =>  {
-                
                 this.status = 'Options Deleted'
                 this.server = ''
-                
             });
-
         },
-        save_options: function() {
-            
+        saveOptions: function() {
             try {
-                
-                // chrome.storage.sync.get(["server"], (result) =>  {
                 chrome.storage.sync.get(null, (result) =>  {
-                    
                     if (typeof result["server"] !== undefined) {
                         
                         // INFO: if results are not in array, make them
-                        var array = Array.isArray(result["server"]) ? result["server"] : [result["server"]]
-                        this.server = array.unshift(this.server) // FIXME: react server
-                        var jsObj = {}
+                        var array = Array.isArray(result["server"]) ? result["server"] : [result["server"]],
+                            jsObj = {};
                         jsObj["server"] = array
+                        jsObj["server"].push(this.serverAdd) // adding new server
+                        
+                        this.server = jsObj["server"] // FIXME: react server
                         
                         chrome.storage.sync.set(jsObj, () =>  {
-                            
                             console.log("Saved a new array item", jsObj);
                             this.status = 'Options saved'
-                            
                         });
-                        
                     } else {
                         console.log("Servers are not defined")
                     }
-                        
                 })
-                
             } catch(error) {
                 console.log("Issue with Saving Servers", error)
             }
-            
         }
-            
         },
         
     mounted() {

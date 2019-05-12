@@ -28,5 +28,10 @@
         "default_popup": "popup.html"
     },
     "manifest_version": 2,
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+    "icons": {
+        "16": "ws.png",
+        "48": "ws.png",
+        "128": "ws.png"
+    }
 }

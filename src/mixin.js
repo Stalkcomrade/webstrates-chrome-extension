@@ -76,13 +76,12 @@ export const storageMixin = {
         // Restores select box and checkbox state using the preferences
         // stored in chrome.storage.
         restore_options: function() {
-
             chrome.storage.sync.get(null, (servers) => {
+                this.server = []
                 Object.values(servers.server).forEach(server => {
                     this.server.push(server) // SOLVED: server is not really array get array of values
                 })
                 console.log("Restoring Servers", this.server)
-
             })
         },
 
