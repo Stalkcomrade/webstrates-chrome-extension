@@ -54,7 +54,7 @@
                           <b-tab no-body v-for="(value, name) in finestHistory" :title="name">
                             <b-table striped hover :items="value" :fields="fields">
                               <template slot="link" slot-scope="row">
-                                <b-link :href="row.item.searchElement.url">Link</b-link>
+                                <b-link :href="row.item.searchElement.url" v-on:click="redirect(row.item.searchElement.url)">Link</b-link>
                               </template>
                             </b-table>
                           </b-tab>
@@ -111,6 +111,7 @@ export default {
         finalHistory: [], // history object for rendering
         finestHistory: [], // FIXME: temporal storage for histories
         projects: {}, // building projects in tabs
+        simpleProjects: '',
         arrCheck: [],
         fields: [
             'link',
@@ -143,7 +144,38 @@ export default {
             }
         ]
     }),
+    watch: {
+        // simpleProjects() {
+        projects() {
+
+            console.log("Projects watcher")
+            // making two project spaces consistent between each other
+            // then branching projects are ready, filtering simple one
+            // FIXME: suppress simple projects from being rendered
+            // before filtering
+
+            var temp1 = this.simpleProjects
+
+            console.log("this.projects", this.projects)
+            
+            var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
+                if (Object.keys(this.projects).includes(key)) {
+                    console.log("Filtered", key)}
+                
+	        if (!Object.keys(this.projects).includes(key)) {
+		    rex[key] = temp1[key]
+                }
+                return rex
+            }, {})
+            
+            console.log("Simple project space", dt, temp1)
+            this.finestHistory = dt
+        }
+    },
     methods: {
+        redirect: function(link) {
+            window.location.replace(link)
+        },
         /**
          * 
          * @param history - string to extract information from
@@ -249,7 +281,7 @@ export default {
                                 ttprj = {};
                             
                             console.log("Accessing structure storage:", result["structures"])
-                            console.log("Projects !", projects)
+                            
 
                             // making projects considering their structures
                             projects.filter(el => { if (el.project) {return el}})
@@ -258,7 +290,7 @@ export default {
                                 })
                             
                             this.projects = ttprj
-                            // console.log("ttprj", ttprj)
+                            console.log("Projects with branching structure", this.projects)
 
                         } else { // structure storage is empty
                             flag = true;
@@ -470,13 +502,18 @@ export default {
                                                                           t.version == el.version &&
                                                                           t.bookmark == el.bookmark) === index)
             })
+
+            // INFO: from here goes to watcher
+            // waiting for both work spaces to be prepared in
+            // order to synchronise them
             
-            this.finestHistory = projectsNew
+            this.simpleProjects = projectsNew
+            // this.finestHistory = projectsNew
             
             // TODO: group entities with equal webstrateId in together
             // TODO: except those with structure Projects
 
-            console.log(this.finestHistory, "Finest History")
+            // console.log(this.finestHistory, "Finest History")
             console.log(this.finalHistory, "Final History")
         }
         
