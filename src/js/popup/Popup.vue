@@ -66,13 +66,6 @@
               </b-card>
             </div>
             
-            <!-- old rendering - all-together -->
-            <!-- <b-table striped hover :items="finalHistory" :fields="fields"> -->
-              <!--   <template slot="link" slot-scope="row"> -->
-                <!--     <b-link :href="row.item.searchElement.url">Link</b-link> -->
-                <!--   </template> -->
-              <!-- </b-table> -->
-            
           </div>
         </div>
       </header>
@@ -98,9 +91,6 @@ import '../../../node_modules/bootstrap-vue/dist/bootstrap-vue.css'
 import {
     storageMixin
 } from '../../mixin'
-
-// import contentScript from '../../js/getOps.js';
-// import structureScript from '../../js/getStructure.js';
 
 export default {
     mixins: [storageMixin],
@@ -205,27 +195,14 @@ export default {
             return regRes
         },
         /**
-         * 
-         * @param text - search query
          * @return - no return value, pushes to this.history
          */
-        
-        searchHistory: function(text){
-
-            // FIXME:
-            // this.history = []
-            // return new Promise()
-            
+        searchHistory: function(){
             chrome.history.search({text: "", maxResults: 0, startTime: 0}, (data) => {
                 data.forEach((page) => {
-                    // TODO: push the whole object
-                    // FIXME: will ruing the whole mechanism
-                    // this.history.push(page.url)
                     this.history.push(page)
                 })
-                
             })
-            
         },
         /**
          * set our internal state
@@ -262,28 +239,26 @@ export default {
             scripts.forEach((script) => {
                 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
 
-
                     // TODO: do not fetch webstrates, which ids are already in a storage
                     // uses local storage instead of global
                     // https://developer.chrome.com/apps/storage
                     chrome.storage.local.get(null, (result) => {
                         if (result["structures"] != null) { // structure storage exists
 
+                            var projects = this.uniteProjects(result["structures"]),
+                                ttprj = {};
                             
-                            var projects = this.uniteProjects(result["structures"])
                             console.log("Accessing structure storage:", result["structures"])
                             console.log("Projects !", projects)
 
                             // making projects considering their structures
-                            var ttprj = {}
                             projects.filter(el => { if (el.project) {return el}})
                                 .forEach(el => {
-                                    // el.project
                                     ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
                                 })
                             
                             this.projects = ttprj
-                            console.log("ttprj", ttprj)
+                            // console.log("ttprj", ttprj)
 
                         } else { // structure storage is empty
                             flag = true;
@@ -325,7 +300,6 @@ export default {
                                                }
                                     })
 
-                                
                                 this.saveWebstratesStructure("structures", responseStr)
                                 console.log("Got Response from Content - structure of Webstrates", responseStr)
 
@@ -351,7 +325,6 @@ export default {
                     // makes a composite key
                     key = String(x.webstrateId) + String(x.server) + String(x.version) + String(x.bookmark);
                     
-                    // (rv[key] = rv[key] || []).push(x);
                     rv[key] = rv[key] || {arr: [], visits: 0, bookmark: x.bookmark, server: x.server, version: x.version, webstrateId: x.webstrateId, searchElement: x.searchElement}
                     rv[key].arr.push(x)
                     rv[key].visits += x.searchElement.visitCount 
@@ -375,14 +348,16 @@ export default {
             };
 
 
-            // FIXME:
-            var processedHistoryMutated = groupBy(processedHistory, "webstrateId")
-            Object.keys(processedHistoryMutated).forEach(el => processedHistoryMutated[el].arr = null) //
-            var fnl = Object.keys(processedHistoryMutated).map(el => { try { return processedHistoryMutated[el] } catch(error) { return null} });
-
-            var grpProjects = groupByProjects(processedHistory, "webstrateId");
-
+            var processedHistoryMutated,
+                fnl,
+                grpProjects;
+                
             
+            // FIXME:
+            processedHistoryMutated = groupBy(processedHistory, "webstrateId")
+            Object.keys(processedHistoryMutated).forEach(el => processedHistoryMutated[el].arr = null) //
+            fnl = Object.keys(processedHistoryMutated).map(el => { try { return processedHistoryMutated[el] } catch(error) { return null} });
+            grpProjects = groupByProjects(processedHistory, "webstrateId");
             
             return [fnl, grpProjects]
 
@@ -400,13 +375,7 @@ export default {
             var optionsRestored = this.restore_options()
         })
 
-        // INFO: search for corresponding links within name of each server
-        // as the search query
-
-        this.server.forEach(el => {
-            this.searchHistory(el)
-        })
-
+        this.searchHistory()
 
         // INFO: extracting history
         setTimeout(() => {
@@ -421,17 +390,12 @@ export default {
                         this.processedHistory.push(Object.assign({searchElement: element}, this.extractInfo(el, "history")))
 
                 })
-                
             })
-
+            
             console.log("Processed History: ", this.processedHistory)
-
-            // TODO: group item
             
         }, 2500)
 
-
- 
 
         // INFO: extracting bookmarks
         var updBookmarks = setInterval(() => {
@@ -443,6 +407,7 @@ export default {
 
                 // FIXME: get rid of undefined and nulls
                 // FIXME: it seems like this is the source for duplicates across history entities
+                
                 this.config.forEach(bkm => {
                     var extractedBkmOBject = this.extractInfo(bkm.urlOrFolder, "bookmark")
                     extractedBkmOBject.server != "undefined" &&
@@ -476,25 +441,15 @@ export default {
 
             // making projects WITHOUT considering their structure
             var [projectsOld, projectsNew] = this.aggregateHistory(this.processedHistory);
-                // ttprj = {};
-            
-            // projects.forEach(el => {
-            //     // el.project
-            //     ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
-            // })
-            // console.log("ttprj", ttprj)
-            // console.log(projectsOld, projectsNew, "Old - New")
 
             // FIXME: interfering with old ways of making projects
-            // old way
             this.finalHistory = projectsOld
-            // new way
 
             // filtering those projects, which webstrate server is
             // not in the list
             // projectsNew
 
-            // FIXME: fetch from any server
+            // FIXME: fetch from any server - API limitation
             
             // TODO: list of servers
             // TODO: update list of servers to vue globals
@@ -506,8 +461,17 @@ export default {
                 .reduce((res, key) => (res[key] = projectsNew[key], res), {} );
 
             projectsNew = projectsNewFiltered
-            this.finestHistory = projectsNew
+
+            // filtering duplicates within projects by a composite key
+            Object.keys(projectsNew).forEach(el1 => {
+	        projectsNew[el1] = projectsNew[el1].filter((el, index, self) => 
+                                                           self.findIndex(t => t.webstrateId === el.webstrateId &&
+                                                                          t.server === el.server &&
+                                                                          t.version == el.version &&
+                                                                          t.bookmark == el.bookmark) === index)
+            })
             
+            this.finestHistory = projectsNew
             
             // TODO: group entities with equal webstrateId in together
             // TODO: except those with structure Projects
