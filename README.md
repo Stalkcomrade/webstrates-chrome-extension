@@ -1,7 +1,7 @@
 # Chrome Extension for webstrates bookmark extraction
 
 ## Installation
-Link on ![zip archive](https://github.com/Stalkcomrade/webstrates-chrome-extension/blob/master/ext.zip)
+Link on [zip archive](https://github.com/Stalkcomrade/webstrates-chrome-extension/raw/master/ext.zip)
 
 ## Usage
 1) Configure Server via Options 
