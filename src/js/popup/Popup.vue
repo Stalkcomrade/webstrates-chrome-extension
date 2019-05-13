@@ -474,7 +474,29 @@ export default {
             // old way
             this.finalHistory = projectsOld
             // new way
+
+            // filtering those projects, which webstrate server is
+            // not in the list
+            // projectsNew
+
+            // FIXME: fetch from any server
+
+
+
+            
+            
+            // TODO: list of servers
+            // TODO: update list of servers to vue globals
+            console.log("List of servers in Popup", this.server)
+            var projectsNewFiltered = Object.keys(projectsNew).map(el => {
+	        if (projectsNew[el].some(ar => this.server.includes(ar.server))) {return el}
+            })
+                .filter(el => el != undefined)
+                .reduce((res, key) => (res[key] = projectsNew[key], res), {} );
+
+            projectsNew = projectsNewFiltered
             this.finestHistory = projectsNew
+            
             
             // TODO: group entities with equal webstrateId in together
             // TODO: except those with structure Projects

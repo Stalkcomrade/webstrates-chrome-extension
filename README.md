@@ -1,3 +1,14 @@
 # Chrome Extension for webstrates bookmark extraction
 
-Based on [this article](http://vuejsdevelopers.com/2017/05/08/vue-js-chrome-extension/).
+Link on [] zip archive
+
+1) Configure Server via Options 
+
+2) Open any webstrate on a server you want your projects to be composed
+
+3) Open extension
+
+
+Description: 
+
+first grouping provides ...

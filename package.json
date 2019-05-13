@@ -1,9 +1,9 @@
 {
-    "name": "vuejs-chrome-extension",
-    "version": "0.0.1",
-    "description": "A Vue.js Chrome extension",
+    "name": "webstrates-projects-chrome-extension",
+    "version": "1.0.0",
+    "description": "A Vue.js Chrome extension for Composing Webstrates Projects",
     "scripts": {
-        "build": "node utils/build.js",
+        "build": "node utils/build.js && zip -r ext.zip ./build/*",
         "start": "node utils/webserver.js"
     },
     "dependencies": {
