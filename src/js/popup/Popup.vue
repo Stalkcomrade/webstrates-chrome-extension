@@ -3,50 +3,64 @@
   <header class="header">
     <h1 align="center"> Webstrates Projects </h1>
     
-    <button v-on:click="deleteWebstratesStructure">Delete Structure Storage</button>
+    <b-button variant="danger" v-on:click="deleteWebstratesStructure">Delete Structure Storage</b-button>
+    
     <br>
     <br>
     
+    <!-- <button v-on:click="deleteWebstratesStructure">Delete Structure Storage</button> -->
     <!-- <div class="grid-container"> -->
       <!-- <div class="sidebar"> -->
         <!--   <li> bookmarks </li> -->
         <!--   <li> history </li> -->
         <!-- </div> -->
-      
-      <div class="main">
+      <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
+      <!-- <img :src="require('../../../assets/ws.png')"/> -->
+      <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
+      <!-- <b-table striped hover :items="processedHistory" :fields="fields"> -->
         
-        <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
-        <!-- <img :src="require('../../../assets/ws.png')"/> -->
-        <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
-        <div>
-          <!-- <b-table striped hover :items="processedHistory" :fields="fields"> -->
-            
-            <!-- projects with branching -->
+        <div class="main">
+          <div>
             <div>
               <b-card no-body>
-                <b-tabs card>
-                  <b-tab no-body v-for="(value, name) in projects" :title="name">
-                    <b-table striped hover :items="value" :fields="fields">
-                      <template slot="link" slot-scope="row">
-                        <b-link :href="row.item.searchElement.url">Link</b-link>
-                      </template>
-                    </b-table>
+                <b-tabs pills card vertical active-nav-item-class="font-weight-bold text-uppercase text-success">
+                  <b-tab title="Projects Structured">
+                    <!-- projects with branching -->
+                    <div v-if="Object.keys(projects).length == 0">
+                      <b-spinner variant="success" label="Spinning"></b-spinner>
+                    </div>
+                    <div v-else>
+                      <b-card no-body>
+                        <b-tabs card>
+                          <b-tab no-body v-for="(value, name) in projects" :title="name">
+                            <b-table striped hover :items="value" :fields="fields">
+                              <template slot="link" slot-scope="row">
+                                <b-link :href="row.item.searchElement.url">Link</b-link>
+                              </template>
+                            </b-table>
+                          </b-tab>
+                        </b-tabs>
+                      </b-card>
+                    </div>
                   </b-tab>
-                </b-tabs>
-              </b-card>
-            </div>
-            
-            
-            <!-- projects without branching -->
-            <div>
-              <b-card no-body>
-                <b-tabs card>
-                  <b-tab no-body v-for="(value, name) in finestHistory" :title="name">
-                    <b-table striped hover :items="value" :fields="fields">
-                      <template slot="link" slot-scope="row">
-                        <b-link :href="row.item.searchElement.url">Link</b-link>
-                      </template>
-                    </b-table>
+                  <b-tab title="Project Simple">
+                    <!-- projects without branching -->
+                    <div v-if="finestHistory.length == 0">
+                      <b-spinner variant="success" label="Spinning"></b-spinner>
+                    </div>
+                    <div v-else>
+                      <b-card no-body>
+                        <b-tabs card>
+                          <b-tab no-body v-for="(value, name) in finestHistory" :title="name">
+                            <b-table striped hover :items="value" :fields="fields">
+                              <template slot="link" slot-scope="row">
+                                <b-link :href="row.item.searchElement.url">Link</b-link>
+                              </template>
+                            </b-table>
+                          </b-tab>
+                        </b-tabs>
+                      </b-card>
+                    </div>
                   </b-tab>
                 </b-tabs>
               </b-card>
@@ -54,16 +68,13 @@
             
             <!-- old rendering - all-together -->
             <!-- <b-table striped hover :items="finalHistory" :fields="fields"> -->
-            <!--   <template slot="link" slot-scope="row"> -->
-            <!--     <b-link :href="row.item.searchElement.url">Link</b-link> -->
-            <!--   </template> -->
-            <!-- </b-table> -->
+              <!--   <template slot="link" slot-scope="row"> -->
+                <!--     <b-link :href="row.item.searchElement.url">Link</b-link> -->
+                <!--   </template> -->
+              <!-- </b-table> -->
             
+          </div>
         </div>
-
-        </div>
-        <!-- </div> -->
-        
       </header>
   </div>
 </template>
@@ -78,6 +89,8 @@ import BLink from '../../../node_modules/bootstrap-vue/es/components/link/link.j
 import BCard from '../../../node_modules/bootstrap-vue/es/components/card/card.js'
 import BTab from '../../../node_modules/bootstrap-vue/es/components/tabs/tab.js'
 import BTabs from '../../../node_modules/bootstrap-vue/es/components/tabs/tabs.js'
+import BButton from '../../../node_modules/bootstrap-vue/es/components/button/button.js'
+import BSpinner from '../../../node_modules/bootstrap-vue/es/components/spinner/spinner.js' 
 
 import '../../../node_modules/bootstrap/dist/css/bootstrap.css'
 import '../../../node_modules/bootstrap-vue/dist/bootstrap-vue.css'
@@ -92,11 +105,13 @@ import {
 export default {
     mixins: [storageMixin],
     components: {
-        'b-table': BTable,
-        'b-link' : BLink,
-        'b-card' : BCard,
-        'b-tabs' : BTabs,
-        'b-tab'  : BTab,
+        'b-table'   : BTable,
+        'b-link'    : BLink,
+        'b-card'    : BCard,
+        'b-tabs'    : BTabs,
+        'b-tab'     : BTab,
+        'b-button'  : BButton,
+        'b-spinner' : BSpinner
     },
     data: () => ({
         bookmarksProcessed: [],
@@ -480,10 +495,6 @@ export default {
             // projectsNew
 
             // FIXME: fetch from any server
-
-
-
-            
             
             // TODO: list of servers
             // TODO: update list of servers to vue globals
@@ -519,6 +530,7 @@ export default {
 
 
 <style lang="css">
+  
 .grid-container {
   display: grid;
   grid-template-columns: 0.2fr 1.8fr;
