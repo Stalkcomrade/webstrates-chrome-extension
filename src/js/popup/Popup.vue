@@ -76,6 +76,7 @@
 <script lang="js">
 
 import * as d3 from 'd3';
+import moment from 'moment';
 
 import BTable from '../../../node_modules/bootstrap-vue/es/components/table/table.js'
 import BLink from '../../../node_modules/bootstrap-vue/es/components/link/link.js'
@@ -136,40 +137,50 @@ export default {
                 variant: 'danger'
             },
             {
-                // key: 'searchElement.visitCount',
                 key: 'visits',
                 label: 'visits',
+                sortable: true,
+                variant: 'danger'
+            },
+            {
+                key: 'lastVisitTime',
+                label: 'Time Accessed',
                 sortable: true,
                 variant: 'danger'
             }
         ]
     }),
     watch: {
-        // simpleProjects() {
         projects() {
 
             console.log("Projects watcher")
             // making two project spaces consistent between each other
             // then branching projects are ready, filtering simple one
-            // FIXME: suppress simple projects from being rendered
+            
+            // suppress simple projects from being rendered
             // before filtering
 
             var temp1 = this.simpleProjects
-
-            console.log("this.projects", this.projects)
-            
             var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
                 if (Object.keys(this.projects).includes(key)) {
                     console.log("Filtered", key)}
                 
 	        if (!Object.keys(this.projects).includes(key)) {
 		    rex[key] = temp1[key]
+
+                    // extracting visits per entity
+                    // need to be consistent with the template
+                    // for rendering vue tables
+                    rex[key].forEach(entity => {
+                        entity.visits = entity.searchElement.visitCount
+                        entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
+                    })
                 }
                 return rex
             }, {})
             
-            console.log("Simple project space", dt, temp1)
             this.finestHistory = dt
+            console.log("Simple project space", dt)
         }
     },
     methods: {
@@ -282,11 +293,11 @@ export default {
                             
                             console.log("Accessing structure storage:", result["structures"])
                             
-
-                            // making projects considering their structures
+                            // assembling projects, while considering their structures
                             projects.filter(el => { if (el.project) {return el}})
                                 .forEach(el => {
                                     ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
+                                    ttprj[el.project].forEach(entity => entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY"))
                                 })
                             
                             this.projects = ttprj
