@@ -54,7 +54,7 @@
                           <b-tab no-body v-for="(value, name) in finestHistory" :title="name">
                             <b-table striped hover :items="value" :fields="fields">
                               <template slot="link" slot-scope="row">
-                                <b-link :href="row.item.searchElement.url" v-on:click="redirect(row.item.searchElement.url)">Link</b-link>
+                                <b-link :href="row.item.searchElement.url" v-on:click="redirect(row.item.searchElement.url, row.item)">Link</b-link>
                               </template>
                             </b-table>
                           </b-tab>
@@ -152,14 +152,14 @@ export default {
     }),
     watch: {
         projects() {
-
+            
             console.log("Projects watcher")
             // making two project spaces consistent between each other
             // then branching projects are ready, filtering simple one
             
             // suppress simple projects from being rendered
             // before filtering
-
+            
             var temp1 = this.simpleProjects
             var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
                 if (Object.keys(this.projects).includes(key)) {
@@ -167,7 +167,7 @@ export default {
                 
 	        if (!Object.keys(this.projects).includes(key)) {
 		    rex[key] = temp1[key]
-
+                    
                     // extracting visits per entity
                     // need to be consistent with the template
                     // for rendering vue tables
@@ -184,8 +184,27 @@ export default {
         }
     },
     methods: {
-        redirect: function(link) {
-            window.location.replace(link)
+        redirect: function(link, entityCheck) {
+            if (link == null) {
+                console.error("Link is null for this entity: ", entityCheck)
+            } else {
+                console.log(link)
+                // window.open(link, '_blank')
+                // window.location.replace(link)
+                
+                var frame = document.createElement('iframe');
+                
+	        frame.setAttribute('width', '100%');
+	        frame.setAttribute('height', '100%');
+	        frame.setAttribute('frameborder', '0');
+	        frame.setAttribute('id', 'rtmframe');
+                
+	        // if (popup == 'gmail') {
+		// open gmail gadget
+		// $('.height(300).width(200);
+		frame.setAttribute('src', 'http://www.rememberthemilk.com/services/modules/gmail/');
+                
+            }
         },
         /**
          * 
@@ -286,6 +305,7 @@ export default {
                     // uses local storage instead of global
                     // https://developer.chrome.com/apps/storage
                     chrome.storage.local.get(null, (result) => {
+                        
                         if (result["structures"] != null) { // structure storage exists
 
                             var projects = this.uniteProjects(result["structures"]),
@@ -304,13 +324,11 @@ export default {
                             console.log("Projects with branching structure", this.projects)
 
                         } else { // structure storage is empty
+                            
                             flag = true;
                             console.log("Structure storage is empty")
-                        }
-                    });
-                    
 
-                    if (flag == true) {
+                            if (flag == true) {
                         
                         console.log("Executing content script")
                         chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
@@ -351,7 +369,55 @@ export default {
                         );
                         
                         });
-                    }
+                            }
+                            
+                        }
+                    });
+                    
+
+                    
+                    // if (flag == true) {
+                        
+                    //     console.log("Executing content script")
+                    //     chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
+
+                    //     var processedHistory = this.processedHistory,
+                    //         filteredHistory = processedHistory.map(el => el.webstrateId),
+                    //         uniqueHistory = Array.from(new Set(filteredHistory));
+
+                    //     console.log("History to send from popup", uniqueHistory)
+                    //     chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
+
+                    //     // receiving answer from content script
+                    //     // with the webstrates structures
+                    //     chrome.runtime.onMessage.addListener(
+                    //         (request, sender, sendResponse) => {
+                                
+                    //             // this.deleteWebstratesStructure("structures")
+                    //             // filters nulls and undefined
+
+                    //             var projects = this.uniteProjects(JSON.parse(request.responseWebstratesStructure))
+                    //             console.log("Projects: ", projects)
+                                
+                    //             var responseStr = JSON.parse(request.responseWebstratesStructure)
+                    //                 .filter(ws => {
+	            //                     return ws != undefined && ws[0].webstrateId != "frontpage" && ws[0].webstrateId != "undefined"
+                    //                 })
+                    //                 .map(ws => {
+                    //                     return {wsId      :  ws[0].webstrateId,
+                    //                             structure :  ws[0]
+                    //                            }
+                    //                 })
+
+                    //             this.saveWebstratesStructure("structures", responseStr)
+                    //             console.log("Got Response from Content - structure of Webstrates", responseStr)
+
+                                
+                    //         }
+                    //     );
+                        
+                    //     });
+                    // }
                     
                 })
             })

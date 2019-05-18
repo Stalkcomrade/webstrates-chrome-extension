@@ -71,7 +71,11 @@ const getStructure = (webstrateId) => {
 
         } catch (error) {
             console.log("Rejected", webstrateId)
-            reject(error)
+            // SOLVED: checking whether resolve with null will change
+            // promise.all behaviour
+            // indeed, it helped
+            resolve(null)
+            // reject(error)
         }
     })
 

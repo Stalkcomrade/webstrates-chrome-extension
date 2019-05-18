@@ -14,8 +14,19 @@ export const storageMixin = {
             var obj = {};
             obj[storageName] = null;
 
-            chrome.storage.local.set(obj)
-            console.log("Webstrates Structure is Cleaned")
+            // chrome.storage.local.set(obj)
+            chrome.storage.local.clear(function() {
+                console.log("Webstrates Structure is Cleaned")
+                var error = chrome.runtime.lastError;
+                if (error) {
+
+                    console.error(error);
+                }
+            });
+
+
+
+
         },
         /**
          * checks whether config already contains
