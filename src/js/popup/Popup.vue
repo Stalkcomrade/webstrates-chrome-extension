@@ -191,6 +191,10 @@ export default {
                 console.log(link)
                 // window.open(link, '_blank')
                 // window.location.replace(link)
+
+                if (document.getElementById("rtmframe")) {
+                    document.getElementById("rtmframe").remove()
+                }
                 
                 var frame = document.createElement('iframe');
                 
@@ -199,10 +203,8 @@ export default {
 	        frame.setAttribute('frameborder', '0');
 	        frame.setAttribute('id', 'rtmframe');
                 
-	        // if (popup == 'gmail') {
-		// open gmail gadget
-		// $('.height(300).width(200);
-		frame.setAttribute('src', 'http://www.rememberthemilk.com/services/modules/gmail/');
+		frame.setAttribute('src', link);
+                document.body.appendChild(frame)
                 
             }
         },
@@ -293,6 +295,32 @@ export default {
         // content script execution
         executeContentScripts: function() {
 
+
+            // used in order to create projects
+            // localised into separate functions
+            // because is used in two cases
+            var prepareProjects = (inputStructures) => {
+
+                var projects = this.uniteProjects(inputStructures),
+                    ttprj = {};
+                
+                console.log("Accessing structure storage:", inputStructures)
+                
+                // assembling projects, while considering their structures
+                projects.filter(el => { if (el.project) {return el}})
+                    .forEach(el => {
+                        ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
+                        ttprj[el.project].forEach(entity => entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY"))
+                    })
+                
+                this.projects = ttprj
+                console.log("Projects with branching structure", this.projects)
+
+            }
+
+            
+            
+            
             var scripts = [
                 "getStructure.bundle.js"
             ],
@@ -308,20 +336,21 @@ export default {
                         
                         if (result["structures"] != null) { // structure storage exists
 
-                            var projects = this.uniteProjects(result["structures"]),
-                                ttprj = {};
+                            // TODO: make this a function
+                            prepareProjects(result["structures"])
                             
-                            console.log("Accessing structure storage:", result["structures"])
-                            
-                            // assembling projects, while considering their structures
-                            projects.filter(el => { if (el.project) {return el}})
-                                .forEach(el => {
-                                    ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
-                                    ttprj[el.project].forEach(entity => entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY"))
-                                })
-                            
-                            this.projects = ttprj
-                            console.log("Projects with branching structure", this.projects)
+                            // var projects = this.uniteProjects(result["structures"]),
+                            //     ttprj = {};
+                            // console.log("Accessing structure storage:", result["structures"])
+                            // // assembling projects, while considering their structures
+                            // projects.filter(el => { if (el.project) {return el}})
+                            //     .forEach(el => {
+                            //         ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
+                            //         ttprj[el.project].forEach(entity => entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY"))
+                            //     })
+                            // this.projects = ttprj
+                            // console.log("Projects with branching structure", this.projects)
+
 
                         } else { // structure storage is empty
                             
@@ -330,12 +359,12 @@ export default {
 
                             if (flag == true) {
                         
-                        console.log("Executing content script")
-                        chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
+                                console.log("Executing content script")
+                                chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
 
-                        var processedHistory = this.processedHistory,
-                            filteredHistory = processedHistory.map(el => el.webstrateId),
-                            uniqueHistory = Array.from(new Set(filteredHistory));
+                                    var processedHistory = this.processedHistory,
+                                        filteredHistory = processedHistory.map(el => el.webstrateId),
+                                        uniqueHistory = Array.from(new Set(filteredHistory));
 
                         console.log("History to send from popup", uniqueHistory)
                         chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
@@ -364,6 +393,8 @@ export default {
                                 this.saveWebstratesStructure("structures", responseStr)
                                 console.log("Got Response from Content - structure of Webstrates", responseStr)
 
+                                prepareProjects(responseStr)
+
                                 
                             }
                         );
@@ -373,51 +404,6 @@ export default {
                             
                         }
                     });
-                    
-
-                    
-                    // if (flag == true) {
-                        
-                    //     console.log("Executing content script")
-                    //     chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
-
-                    //     var processedHistory = this.processedHistory,
-                    //         filteredHistory = processedHistory.map(el => el.webstrateId),
-                    //         uniqueHistory = Array.from(new Set(filteredHistory));
-
-                    //     console.log("History to send from popup", uniqueHistory)
-                    //     chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
-
-                    //     // receiving answer from content script
-                    //     // with the webstrates structures
-                    //     chrome.runtime.onMessage.addListener(
-                    //         (request, sender, sendResponse) => {
-                                
-                    //             // this.deleteWebstratesStructure("structures")
-                    //             // filters nulls and undefined
-
-                    //             var projects = this.uniteProjects(JSON.parse(request.responseWebstratesStructure))
-                    //             console.log("Projects: ", projects)
-                                
-                    //             var responseStr = JSON.parse(request.responseWebstratesStructure)
-                    //                 .filter(ws => {
-	            //                     return ws != undefined && ws[0].webstrateId != "frontpage" && ws[0].webstrateId != "undefined"
-                    //                 })
-                    //                 .map(ws => {
-                    //                     return {wsId      :  ws[0].webstrateId,
-                    //                             structure :  ws[0]
-                    //                            }
-                    //                 })
-
-                    //             this.saveWebstratesStructure("structures", responseStr)
-                    //             console.log("Got Response from Content - structure of Webstrates", responseStr)
-
-                                
-                    //         }
-                    //     );
-                        
-                    //     });
-                    // }
                     
                 })
             })
