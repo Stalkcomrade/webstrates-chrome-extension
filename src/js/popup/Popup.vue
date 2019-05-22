@@ -161,13 +161,34 @@ export default {
             // before filtering
             
             var temp1 = this.simpleProjects
-            var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
-                if (Object.keys(this.projects).includes(key)) {
-                    console.log("Filtered", key)}
+
+            // TODO: fix filtering later
+            // var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
+            //     if (Object.keys(this.projects).includes(key)) {
+            //         console.log("Filtered", key)}
                 
-	        if (!Object.keys(this.projects).includes(key)) {
-		    rex[key] = temp1[key]
+	    //     if (!Object.keys(this.projects).includes(key)) {
+	    //         rex[key] = temp1[key]
                     
+            //         // extracting visits per entity
+            //         // need to be consistent with the template
+            //         // for rendering vue tables
+            //         rex[key].forEach(entity => {
+            //             entity.visits = entity.searchElement.visitCount
+            //             entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
+            //         })
+            //     }
+            //     return rex
+            // }, {})
+
+            var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
+                
+                // if (Object.keys(this.projects).includes(key)) {
+                //     console.log("Filtered", key)}
+                
+	        // if (!Object.keys(this.projects).includes(key)) {
+                
+	            rex[key] = temp1[key]
                     // extracting visits per entity
                     // need to be consistent with the template
                     // for rendering vue tables
@@ -175,7 +196,7 @@ export default {
                         entity.visits = entity.searchElement.visitCount
                         entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
                     })
-                }
+                // }
                 return rex
             }, {})
             
