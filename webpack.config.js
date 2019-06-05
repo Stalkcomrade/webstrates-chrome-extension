@@ -7,13 +7,10 @@ var webpack = require("webpack"),
     {
         VueLoaderPlugin
     } = require('vue-loader'),
-    WriteFilePlugin = require("write-file-webpack-plugin");
-
-function resolve(dir) {
-    return path.join(__dirname, '..', dir)
-}
-
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+    WriteFilePlugin = require("write-file-webpack-plugin"),
+    MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// TODO: deprect
+// ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var alias = {
     // 'getOps.js': 'src/js/getOps.js'
@@ -21,18 +18,20 @@ var alias = {
     // 'vue': 'node_modules/vue/dist/vue.runtime.min.js' // specifying minified build
 };
 
-// load the secrets
-// var alias = {
-//     'vue$': 'vue/dist/vue.esm.js'
-// };
-
+function resolve(dir) {
+    return path.join(__dirname, '..', dir)
+}
 var secretsPath = path.join(__dirname, ("secrets." + env.NODE_ENV + ".js"));
 
 if (fileSystem.existsSync(secretsPath)) {
     alias["secrets"] = secretsPath;
 }
 
+
+
 var options = {
+    // mode: "development",
+    watch: true,
     entry: {
         ws: path.join(__dirname, "assets/ws.png"),
         popup: path.join(__dirname, "src/js/popup.js"),
@@ -52,10 +51,7 @@ var options = {
                 options: {
                     loaders: {
                         'css': 'css-loader',
-                        // 'scss': 'vue-style-loader!css-loader!sass-loader',
-                        // 'sass': 'vue-style-loader!css-loader!sass-loader?indentedSyntax',
                         'file-loader': 'file-loader'
-
                     },
                     extractCSS: true
                 }
@@ -84,10 +80,21 @@ var options = {
             },
             {
                 test: /\.css$/,
-                use: ExtractTextPlugin.extract({
-                    fallback: "style-loader",
-                    use: "css-loader"
-                })
+                use: [{
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            // you can specify a publicPath here
+                            // by default it uses publicPath in webpackOptions.output
+                            publicPath: '../',
+                            hmr: process.env.NODE_ENV === 'development',
+                        },
+                    },
+                    'css-loader',
+                ],
+                // use: ExtractTextPlugin.extract({
+                //     fallback: "style-loader",
+                //     use: "css-loader"
+                // })
             }
         ]
     },
@@ -96,18 +103,25 @@ var options = {
         extensions: ['.js', '.vue']
     },
     plugins: [
+        new MiniCssExtractPlugin({
+            // Options similar to the same options in webpackOptions.output
+            // both options are optional
+            filename: '[name].css',
+            chunkFilename: '[id].css',
+        }),
+        // new ExtractTextPlugin("style.css"),
         // expose and write the allowed env vars on the compiled bundle
         new webpack.DefinePlugin({
             "process.env.NODE_ENV": JSON.stringify(env.NODE_ENV)
         }),
-        // new ChromeExtensionReloader({
-        //     port: 9090, // Which port use to create the server
-        //     reloadPage: true, // Force the reload of the page also
-        //     entries: { // The entries used for the content/background scripts
-        //         contentScript: ['popup', 'options'],
-        //         background: 'background' // *REQUIRED
-        //     }
-        // }),
+        new ChromeExtensionReloader({
+            port: 9090, // Which port use to create the server
+            reloadPage: true, // Force the reload of the page also
+            entries: { // The entries used for the content/background scripts
+                contentScript: path.join(__dirname, "src/js/popup.js"),
+                background: path.join(__dirname, "src/js/background.js") // *REQUIRED
+            }
+        }),
         new VueLoaderPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, "src", "popup.html"),
@@ -128,12 +142,13 @@ var options = {
             filename: "background.html",
             chunks: ["background"]
         }),
-        new ExtractTextPlugin("style.css"),
+
     ]
 };
 
 if (env.NODE_ENV === "development") {
     options.devtool = "cheap-module-eval-source-map";
 }
+
 
 module.exports = options;
