@@ -6,21 +6,20 @@ Link on [zip archive](https://github.com/Stalkcomrade/webstrates-chrome-extensio
 ## Usage
 1) Configure Server via Options 
 
-![image]
+![demo/options.png]
 
 2) Open any webstrate on a server you want your projects to be composed
-
-![image]
-
 3) Open extension
 
-![image]
+![demo/old.png]
 
 
 ## Description:   
 
 Basic idea is to provide simple grouping for webstrates. Two groupping principles are used:
 
-![screen]()
+![demo/overview-extension.png]
 
-![screen]()
+## TODO:
+
+![demo/transclusion-activity.png]
