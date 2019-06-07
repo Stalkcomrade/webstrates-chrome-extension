@@ -59,7 +59,8 @@ var options = {
             {
                 test: /\.js$/,
                 loader: 'babel-loader',
-                exclude: /node_modules/
+                exclude: /node_modules/,
+                // presets: ["es2015"]
             },
             // {
             //     test: /\.(png|jpg|gif|svg)$/,
