@@ -1,7 +1,7 @@
 <template>
 <div id="app">
   <header class="header">
-    <h1 align="center"> Webstrates</h1>
+    <h1 align="center" id="test-title">Webstrates</h1>
     
     <b-button variant="danger" v-on:click="deleteWebstratesStructure">Delete Structure Storage</b-button>
     
