@@ -105,6 +105,7 @@ export default {
         'b-spinner' : BSpinner
     },
     data: () => ({
+        test: "test",
         bookmarksProcessed: [],
         config: [], // fetching configuration from storage
         history: [],

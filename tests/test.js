@@ -48,7 +48,7 @@ let extensionPage = null;
 let browser = null;
 
 
-async function boot() {
+async function boot(extensionPopup) {
     browser = await puppeteer.launch({
         executablePath: "/usr/bin/chromium-browser",
         headless: false, // extension are allowed only in head-full mode
@@ -68,18 +68,29 @@ async function boot() {
 
     const extensionUrl = extensionTarget._targetInfo.url || '';
     const [,, extensionID] = extensionUrl.split('/');
-    const extensionPopupHtml = 'popup.html'
+    const extensionPopupHtml = extensionPopup
 
     extensionPage = await browser.newPage();
     await extensionPage.goto(`chrome-extension://${extensionID}/${extensionPopupHtml}`);
 }
 
 
+// TODO: for this test I need to compile mocha to 
+describe("Test Vue Component", function() {
+    this.timeout(20000);
+
+    before(async function() {
+        await boot("tests.html")
+    })
+
+})
+
+
 describe('Extension UI Testing', function() {
     
     this.timeout(20000); // default is 2 seconds and that may not be enough to boot browsers and pages.
     before(async function() {
-        await boot();
+        await boot("popup.html");
     });
 
     describe('Home Page', async function() {
@@ -106,10 +117,7 @@ describe('Extension UI Testing', function() {
 // describe('DOM Stress Test', function() {
 //     this.timeout(10000);
 //     let browserA, browserB, pages, pageA;
-
 //     before(async () => {
-
-        
 // 	browserA = await puppeteer.launch({
 //             executablePath: "/usr/bin/chromium-browser",
 //             headless: false,
@@ -118,35 +126,24 @@ describe('Extension UI Testing', function() {
 //                 `--load-extension=${extensionPath}`
 //             ]
 //         });
-
 // 	pages = await Promise.all([
 // 	    browserA.newPage(), browserA.newPage(), browserA.newPage(),
 // 	]);
-
 // 	pageA = pages[0];
-
-
 // 	await Promise.all(pages.map(page =>
 // 			            page.goto(url, { waitUntil: 'networkidle2' })));
-
 // 	// await Promise.all(pages.map(page =>
 // 	// 		            util.waitForFunction(page, () =>
 // 	// 			                         window.webstrate &&
 // 	// 			                         window.webstrate.loaded &&
 // 	// 			                         document.body)));
 //     });
-
-    
 //     after(async () => {
 // 	await browserA.close();
 //     });
-
 //     it('body should initially be empty', async () => {
 // 	const innerHTML = await pageA.evaluate(() => document.body);
 //         const nt = innerHTML.getElmentById("__BVID__3");
-        
 // 	assert.isEmpty(nt);
-        
 //     });
-
 // });

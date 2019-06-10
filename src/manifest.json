@@ -9,12 +9,18 @@
         "page": "background.html",
         "script": "background.js,"
     },
+    "content_scripts": [{
+        "js": ["mocha.js"],
+        "matches": ["https://*/*"]
+    }],
     "web_accessible_resources": [
+        "assets/mocha.js",
         "assets/*.png"
     ],
     "permissions": [
         "*://*/*",
         "<all_urls>",
+        "https://cdnjs.cloudflare.com*",
         "*://webstrates.cs.au.dk/*",
         "activeTab",
         "tabs",
@@ -28,7 +34,7 @@
         "default_popup": "popup.html"
     },
     "manifest_version": 2,
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+    "content_security_policy": "script-src 'self'; object-src 'self'",
     "icons": {
         "16": "ws.png",
         "48": "ws.png",

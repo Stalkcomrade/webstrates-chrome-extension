@@ -9,12 +9,10 @@ var webpack = require("webpack"),
     } = require('vue-loader'),
     WriteFilePlugin = require("write-file-webpack-plugin"),
     MiniCssExtractPlugin = require('mini-css-extract-plugin');
-// TODO: deprect
-// ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var alias = {
     // 'getOps.js': 'src/js/getOps.js'
-    //     'ws.png': './assets/ws.png'
+    // 'ws.png': './assets/ws.png'
     // 'vue': 'node_modules/vue/dist/vue.runtime.min.js' // specifying minified build
 };
 
@@ -30,13 +28,17 @@ if (fileSystem.existsSync(secretsPath)) {
 
 
 var options = {
-    // mode: "development",
+    node: {
+        fs: "empty"
+    }, // use for motcha import
     watch: true,
     entry: {
         ws: path.join(__dirname, "assets/ws.png"),
+        mocha: path.join(__dirname, "assets/mocha.js"),
         popup: path.join(__dirname, "src/js/popup.js"),
         options: path.join(__dirname, "src/js/options.js"),
         background: path.join(__dirname, "src/js/background.js"),
+        testFile: path.join(__dirname, "tests/vue-tests.js"),
         getOps: path.join(__dirname, "src/js/getOps.js"),
         getStructure: path.join(__dirname, "src/js/getStructure.js")
     },
@@ -60,18 +62,7 @@ var options = {
                 test: /\.js$/,
                 loader: 'babel-loader',
                 exclude: /node_modules/,
-                // presets: ["es2015"]
             },
-            // {
-            //     test: /\.(png|jpg|gif|svg)$/,
-            //     loader: 'file-loader',
-            //     options: {
-            //         publicPath: (url, resourcePath, context) => {
-            //             return "chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/"
-            //         },
-            //         name: '[name].[ext]?[hash]'
-            //     }
-            // },
             {
                 test: /\.(png|jpg|gif|svg)$/,
                 loader: 'file-loader',
@@ -120,7 +111,8 @@ var options = {
             reloadPage: true, // Force the reload of the page also
             entries: { // The entries used for the content/background scripts
                 contentScript: path.join(__dirname, "src/js/popup.js"),
-                background: path.join(__dirname, "src/js/background.js") // *REQUIRED
+                background: path.join(__dirname, "src/js/background.js"), // *REQUIRED
+                test: path.join(__dirname, "tests/vue-tests.js"), // *REQUIRED
             }
         }),
         new VueLoaderPlugin(),
@@ -142,6 +134,13 @@ var options = {
             template: path.join(__dirname, "src", "background.html"),
             filename: "background.html",
             chunks: ["background"]
+        }),
+        new HtmlWebpackPlugin({
+            cache: true,
+            showErrors: true,
+            template: path.join(__dirname, "src", "tests.html"),
+            filename: "tests.html",
+            chunks: ["testFile"]
         }),
 
     ]
