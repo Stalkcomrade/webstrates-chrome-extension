@@ -104,7 +104,8 @@ export default {
         'b-button'  : BButton,
         'b-spinner' : BSpinner
     },
-    data: () => ({
+data: () => ({
+        error: "",
         test: "test",
         bookmarksProcessed: [],
         config: [], // fetching configuration from storage
