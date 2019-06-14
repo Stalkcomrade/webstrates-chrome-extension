@@ -5,7 +5,8 @@ const chai = require("chai");
 const sinon = require('sinon');
 
 
-mocha.setup('bdd'); 
+mocha.setup('bdd');
+ mocha.growl(); // <-- Enables web notifications
 
 const assert = chai.assert,
     expect = chai.expect;
@@ -27,6 +28,30 @@ mountWrapper = mount(PopupTest, {
 })
 mountWrapper.setData({ test: "test1" })
 
+
+// TODO: into utils
+let promiseState = function(promise, callback) {
+  // Symbols and RegExps are never content-equal
+  var uniqueValue = window['Symbol'] ? Symbol('unique') : /unique/
+
+  function notifyPendingOrResolved(value) {
+    if (value === uniqueValue) {
+      return callback('pending')
+    } else {
+      return callback('fulfilled')
+    }
+  }
+
+  function notifyRejected(reason) {
+    return callback('rejected')
+  }
+  
+  var race = [promise, Promise.resolve(uniqueValue)]
+  Promise.race(race).then(notifyPendingOrResolved, notifyRejected)
+};
+
+window.tsp = tsp
+
 describe('vue test utils', function() {
     
     // Inspect the component instance on mount
@@ -35,14 +60,23 @@ describe('vue test utils', function() {
     })
 
     it('restore options is called without error', function(done) {
-
         setTimeout(function() {
-            assert.notEqual(tsp.returnValue, undefined)
+            console.log(tsp.getCall(0))
             done()
         }, 5000)
-        
     }).timeout(7000)
-    
+
+    it('restore options return true', function(done) {
+
+        setTimeout(function() {
+            promiseState(tsp.getCall(0).returnValue, function(state) {
+                assert.equal(state,'fulfilled');
+                done()
+            })
+            
+        }, 5000)
+        
+    }).timeout(10000)
 })
 
 
