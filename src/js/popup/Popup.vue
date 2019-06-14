@@ -614,19 +614,3 @@ data: () => ({
     }
 }
 </script>
-
-
-<style lang="css">
-  
-.grid-container {
-  display: grid;
-  grid-template-columns: 0.2fr 1.8fr;
-  grid-template-rows: 1fr;
-  grid-template-areas: "sidebar main";
-}
-
-.main { grid-area: main; }
-
-.sidebar { grid-area: sidebar; }
-
-</style>

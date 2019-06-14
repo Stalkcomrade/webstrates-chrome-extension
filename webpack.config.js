@@ -10,6 +10,9 @@ var webpack = require("webpack"),
     WriteFilePlugin = require("write-file-webpack-plugin"),
     MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+
+const nodeExternals = require('webpack-node-externals') // mocha-webpack
+
 var alias = {
     // 'getOps.js': 'src/js/getOps.js'
     // 'ws.png': './assets/ws.png'
@@ -27,15 +30,14 @@ if (fileSystem.existsSync(secretsPath)) {
 
 
 
+
 var options = {
-    node: {
-        fs: "empty"
-    }, // use for motcha import
     watch: true,
     entry: {
         ws: path.join(__dirname, "assets/ws.png"),
         mocha: path.join(__dirname, "assets/mocha.js"),
         popup: path.join(__dirname, "src/js/popup.js"),
+        popupVue: path.join(__dirname, "src/js/popup/Popup.vue"),
         options: path.join(__dirname, "src/js/options.js"),
         background: path.join(__dirname, "src/js/background.js"),
         testFile: path.join(__dirname, "tests/vue-tests.js"),
@@ -72,22 +74,25 @@ var options = {
             },
             {
                 test: /\.css$/,
-                use: [{
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            // you can specify a publicPath here
-                            // by default it uses publicPath in webpackOptions.output
-                            publicPath: '../',
-                            hmr: process.env.NODE_ENV === 'development',
-                        },
-                    },
-                    'css-loader',
-                ],
-                // use: ExtractTextPlugin.extract({
-                //     fallback: "style-loader",
-                //     use: "css-loader"
-                // })
-            }
+                use: [
+                  'vue-style-loader',
+                  'css-loader'
+                ]
+              }
+            // {
+            //     test: /\.css$/,
+            //     use: [{
+            //             loader: MiniCssExtractPlugin.loader,
+            //             options: {
+            //                 // you can specify a publicPath here
+            //                 // by default it uses publicPath in webpackOptions.output
+            //                 publicPath: '../',
+            //                 hmr: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'testing',
+            //             },
+            //         },
+            //         'css-loader',
+            //     ],
+            // }
         ]
     },
     resolve: {
@@ -95,12 +100,12 @@ var options = {
         extensions: ['.js', '.vue']
     },
     plugins: [
-        new MiniCssExtractPlugin({
-            // Options similar to the same options in webpackOptions.output
-            // both options are optional
-            filename: '[name].css',
-            chunkFilename: '[id].css',
-        }),
+        // new MiniCssExtractPlugin({
+        //     // Options similar to the same options in webpackOptions.output
+        //     // both options are optional
+        //     filename: '[name].css',
+        //     chunkFilename: '[id].css',
+        // }),
         // new ExtractTextPlugin("style.css"),
         // expose and write the allowed env vars on the compiled bundle
         new webpack.DefinePlugin({
@@ -142,12 +147,50 @@ var options = {
             filename: "tests.html",
             chunks: ["testFile"]
         }),
+        new HtmlWebpackPlugin({
+            cache: true,
+            showErrors: true,
+            template: path.join(__dirname, "src", "testPuppeteer.html"),
+            filename: "testPuppeteer.html",
+        }),
 
     ]
 };
 
 if (env.NODE_ENV === "development") {
     options.devtool = "eval"
+}
+
+if (env.NODE_ENV === "testing") {
+    
+    options.devtool = 'inline-cheap-module-source-map';
+    options.module.rules[0] = {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+            loaders: {
+                // 'css': 'css-loader',
+                // 'file-loader': 'file-loader'
+            },
+            extractCSS: true
+        }
+    }
+
+
+    options.externals = [nodeExternals()], // mocha-webpack
+    options.target = 'node', // webpack should compile node compatible code
+    options.output = {
+        // ...
+        // use absolute paths in sourcemaps (important for debugging via IDE)
+        path: path.join(__dirname, "build"),
+        filename: "[name].bundle.js",
+        devtoolModuleFilenameTemplate: '[absolute-resource-path]',
+        devtoolFallbackModuleFilenameTemplate: '[absolute-resource-path]?[hash]'
+    },
+    options.node = {
+        fs: "empty"
+    } // use for motcha import
+    
 }
 
 
