@@ -1,3 +1,5 @@
+/* global chrome */
+
 export const storageMixin = {
     data: () => ({
         server: ["webstrates.cs.au.dk", "webstrates.r2.enst.fr"],
@@ -23,8 +25,6 @@ export const storageMixin = {
                     console.error(error);
                 }
             });
-
-
 
 
         },
@@ -86,13 +86,22 @@ export const storageMixin = {
         // use this fun from mixins only
         // Restores select box and checkbox state using the preferences
         // stored in chrome.storage.
+        // if list with the available servers is on the
+        // local storage, just keep them
+        // if there is no server list in the storage
+        // just keep default
         restore_options: function() {
-            chrome.storage.sync.get(null, (servers) => {
-                this.server = []
-                Object.values(servers.server).forEach(server => {
-                    this.server.push(server) // SOLVED: server is not really array get array of values
+            
+            return new Promise((resolve, reject) => {
+                
+                chrome.storage.sync.get(null, function(servers) {
+                    if (servers.server) {
+                        this.server = servers.server
+                    }
+                    // fwefrwrwr43r43r
+                    console.log("Restoring Servers", this.server)
+                    resolve()
                 })
-                console.log("Restoring Servers", this.server)
             })
         },
 
