@@ -13,11 +13,7 @@ var webpack = require("webpack"),
 
 const nodeExternals = require('webpack-node-externals') // mocha-webpack
 
-var alias = {
-    // 'getOps.js': 'src/js/getOps.js'
-    // 'ws.png': './assets/ws.png'
-    // 'vue': 'node_modules/vue/dist/vue.runtime.min.js' // specifying minified build
-};
+var alias = {};
 
 function resolve(dir) {
     return path.join(__dirname, '..', dir)
@@ -28,9 +24,6 @@ if (fileSystem.existsSync(secretsPath)) {
     alias["secrets"] = secretsPath;
 }
 
-
-
-
 var options = {
     watch: true,
     entry: {
@@ -40,9 +33,9 @@ var options = {
         popupVue: path.join(__dirname, "src/js/popup/Popup.vue"),
         options: path.join(__dirname, "src/js/options.js"),
         background: path.join(__dirname, "src/js/background.js"),
-        testFile: path.join(__dirname, "tests/vue-tests.js"),
         getOps: path.join(__dirname, "src/js/getOps.js"),
-        getStructure: path.join(__dirname, "src/js/getStructure.js")
+        getStructure: path.join(__dirname, "src/js/getStructure.js"),
+        testFile: path.join(__dirname, "tests/componentsClient.test.js")
     },
     output: {
         path: path.join(__dirname, "build"),
@@ -158,10 +151,10 @@ var options = {
 };
 
 if (env.NODE_ENV === "development") {
+    
     options.devtool = "eval"
-}
-
-if (env.NODE_ENV === "testing") {
+    
+} else if (env.NODE_ENV === "testing") {
     
     options.devtool = 'inline-cheap-module-source-map';
     options.module.rules[0] = {
@@ -169,28 +162,20 @@ if (env.NODE_ENV === "testing") {
         loader: 'vue-loader',
         options: {
             loaders: {
-                // 'css': 'css-loader',
-                // 'file-loader': 'file-loader'
+                'file-loader': 'file-loader'
             },
             extractCSS: true
         }
     }
 
-
     options.externals = [nodeExternals()], // mocha-webpack
     options.target = 'node', // webpack should compile node compatible code
-    options.output = {
-        // ...
-        // use absolute paths in sourcemaps (important for debugging via IDE)
-        path: path.join(__dirname, "build"),
-        filename: "[name].bundle.js",
-        devtoolModuleFilenameTemplate: '[absolute-resource-path]',
-        devtoolFallbackModuleFilenameTemplate: '[absolute-resource-path]?[hash]'
-    },
-    options.node = {
-        fs: "empty"
-    } // use for motcha import
+    options.entry.mainTest = path.join(__dirname, "tests/main.test.js")
     
+    // use absolute paths in sourcemaps (important for debugging via IDE)
+    options.output.devtoolModuleFilenameTemplate = '[absolute-resource-path]',
+    options.output.devtoolFallbackModuleFilenameTemplate = '[absolute-resource-path]?[hash]'
+    options.node = {fs: "empty", module: "empty"} // use for motcha import
 }
 
 

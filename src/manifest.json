@@ -1,5 +1,5 @@
 {
-    "name": "Vue.js Chrome Extension",
+    "name": "Vue.js Webstrates Extension",
     "options_page": "options.html",
     "options_ui": {
         "page": "options.html",
@@ -19,11 +19,11 @@
     ],
     "permissions": [
         "*://*/*",
-        "<all_urls>",
         "*://cdnjs.cloudflare.com/*",
         "*://webstrates.cs.au.dk/*",
         "activeTab",
         "tabs",
+        "notifications",
         "storage",
         "bookmarks",
         "history",

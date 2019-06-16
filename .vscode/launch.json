@@ -1,19 +1,31 @@
 {
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Attach Debugger",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "restart": true,
+            "sourceMaps": true,
+            "trace": true,
+            "outFiles": [],
+            "localRoot": "${workspaceRoot}",
+            "remoteRoot": null
+          },
                   {
                     "name": "Run mocha webpack",
                     "type": "node",
                     "request": "launch",
                     "port": 9229,
-                    "program": "${workspaceRoot}/node_modules/mocha-webpack/bin/mocha-webpack",
+                    "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
                     "stopOnEntry": false,
                     "sourceMaps": true,
                     "args": [
-                        "--webpack-config", "${workspaceRoot}/webpack.config.js",
                         "--timeout", "9999999",
                         "--colors",
-                        "${file}"
+                        "${workspaceRoot}/tests/main.test.js"
                     ],
                     "cwd": "${workspaceRoot}",
                     "preLaunchTask": null,
@@ -23,33 +35,25 @@
                     ],
                     "env": { "NODE_ENV": "testing"},
                     "console": "integratedTerminal",
-                    "outFiles": []
+                    "outFiles": ["${workspaceRoot}/build/main.bundle.js"],
                   },
       {
           "type": "node",
           "request": "launch",
-          "name": "Mocha All",
-          "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-          "args": [
-              "--timeout",
-              "999999",
-              "--colors",
-              "${workspaceFolder}/tests"
-          ],
-          "console": "integratedTerminal",
-          "internalConsoleOptions": "neverOpen"
-      },
-      {
-          "type": "node",
-          "request": "launch",
           "name": "Mocha Current File",
-          "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+          "port": 9229,
+          "program": "${workspaceRoot}/node_modules/mocha-webpack/bin/mocha-webpack",
           "args": [
               "--timeout",
               "999999",
+              "--webpack-config", "${workspaceRoot}/webpack.config.js",
               "--colors",
               "${file}"
           ],
+          "env": { "NODE_ENV": "testing"},
+          "runtimeArgs": [
+            "--inspect-brk"
+         ],
           "console": "integratedTerminal",
           "internalConsoleOptions": "neverOpen"
         }

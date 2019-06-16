@@ -23,3 +23,19 @@ Basic idea is to provide simple grouping for webstrates. Two groupping principle
 ## TODO:
 
 ![](demo/transclusion-activity.png)
+
+
+## Tests
+
+1) I had a hard time of trying to incorporate puppeteer + vue mounting + mocha + webpack for, sort of, integration test. I could not do this, that is why some of the tests are only on the client side.  
+
+./tests/main.test.js checks whether extension is build, launched and basic layout is rendered.  
+
+2) Some of the tests are done on the client side. For instance, one might be accessible by going to the url:
+chrome-extension://<extensionId>/tests.html
+
+./tests/componentsVue.test.js checks whether user options are extracted correctly.
+
+
+
+
