@@ -14,29 +14,6 @@
             "localRoot": "${workspaceRoot}",
             "remoteRoot": null
           },
-                  {
-                    "name": "Run mocha webpack",
-                    "type": "node",
-                    "request": "launch",
-                    "port": 9229,
-                    "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-                    "stopOnEntry": false,
-                    "sourceMaps": true,
-                    "args": [
-                        "--timeout", "9999999",
-                        "--colors",
-                        "${workspaceRoot}/tests/main.test.js"
-                    ],
-                    "cwd": "${workspaceRoot}",
-                    "preLaunchTask": null,
-                    "runtimeExecutable": null,
-                    "runtimeArgs": [
-                       "--inspect-brk"
-                    ],
-                    "env": { "NODE_ENV": "testing"},
-                    "console": "integratedTerminal",
-                    "outFiles": ["${workspaceRoot}/build/main.bundle.js"],
-                  },
       {
           "type": "node",
           "request": "launch",

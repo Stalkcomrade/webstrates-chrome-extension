@@ -46,21 +46,6 @@ async function boot(extensionPopup) {
 }
 
 
-
-
-// only before vue
-require('jsdom-global')() // for mocha + vue test utils
-
-const { mount, shallowMount} = require('@vue/test-utils')
-const { Vue } = require("vue");
-import PopupTest from '../src/js/popup/Popup';
-
-
-// Vue.config.devtools = true;
-// var tsp = sinon.spy(mixin.methods, 'restore_options')
-let mountWrapper;
-
-
 describe('navigate.js', function() {
 
     before(function() {
@@ -88,143 +73,33 @@ describe('navigate.js', function() {
 
 
 
-describe('Testing Testing', function() {
+// only before vue
+require('jsdom-global')() // for mocha + vue test utils
+
+
+describe('Extension UI Testing', function() {
     
     this.timeout(20000); // default is 2 seconds and that may not be enough to boot browsers and pages.
-    
     before(async function() {
-
-        await boot("testPuppeteer.html");
-
-        // new Vue({
-        //     // el: '#app-test',
-        //     render: h => h(PopupTest)
-        // })
-        // .$mount(`#app-test`)
-        // extensionPage.
-        // PopupTest.
-        // var mountWrapper = new Vue(PopupTest).$mount()
-
-        // console.log(PopupTest)
-        // mountWrapper = mount(PopupTest)
-        // await extensionPage.evaluate(() => {
-        //     new Vue({
-        //     el: '#app-test',
-        //     render: h => h(PopupTest)
-        // })
-        // .$mount(`#app-test`)
-            mountWrapper = mount(PopupTest)
-            // mountWrapper = shallowMount(PopupTest)
-        // });
-        // mountWrapper = shallowMount(PopupTest)
-        
-        debugger;
-        // mountWrapper = mount(PopupTest, {
-        //     // mixins: [mixin]
-        // })
-        // mountWrapper.setData({ test: "test1" })        
-        // var tsp = sinon.spy(mountWrapper.vm, 'restore_options')
-        
+        await boot("popup.html");
     });
 
-    describe('vue test utils', function() {
-        
-        // Inspect the component instance on mount
-        it('correctly sets the message when created', function() {
-            // assert.equal(mountWrapper.vm.test, 'test1')
-            assert.equal(mountWrapper.vm.data.test, 'test1')
+    describe('Home Page', async function() {
+        it('Greet Message', async function() {
+            
+            const inputElement = await extensionPage.$("[id='test-title']");
+            assert.ok(inputElement, 'Input is not rendered');
+            
+            // await extensionPage.type("[id='test-title']", 'Webstrates1');
+            // await extensionPage.click('[data-test-greet-button]');
+            
+            const greetMessage  = await extensionPage.$eval('#test-title', element => element.textContent)
+            assert.equal(greetMessage, 'Webstrates', 'Webstrates title is not shown');
         })
+    });
 
-        // it('restore options is called without error', function(done) {
-        //     setTimeout(function() {
-        //         console.log(tsp.getCall(0))
-        //         done()
-        //     }, 5000)
-        // }).timeout(7000)
-
-        // it('restore options return true', function(done) {
-
-        //     setTimeout(function() {
-        //         promiseState(tsp.getCall(0).returnValue, function(state) {
-        //             assert.equal(state,'fulfilled');
-        //             done()
-        //         })
-                
-        //     }, 5000)
-            
-        // }).timeout(10000)
-    })
-
-    // describe('Home Page', async function() {
-    //     // it('Greet Message', async function() {
-    //     jsdom({
-    //         url: "http://localhost"
-    //     })
-
-    //     it('restore options return true', function(done) {
-    //         setTimeout(function() {
-    //             promiseState(window.tsp.getCall(0).returnValue, function(state) {
-    //                 assert.equal(state,'fulfilled');
-    //                 done()
-    //             })
-                
-    //         }, 5000)
-            
-    //     }).timeout(10000)
-            
-    //         // it('correctly sets the message when created', async function() {
-    //         //     // const window = directJSHandle(page.evaluate(() => window))
-    //         //     setTimeout(function() {
-    //         //         // const windowObjectAvailable = function() {
-    //         //             // if (tspsd != ) {return true} else {return false}
-    //         //         // }
-
-    //         //         var tt = windowObjectAvailable;
-                    
-    //         //         assert.isTruel(tt)
-    //         //     }, 5000)
-                
-                      
-    //         // })
-
-    //     // it('restore options is called without error', function(done) {
-    //     //         setTimeout(function() {
-    //     //             console.log(window.tsp.getCall(0))
-    //     //             done()
-    //     //         }, 5000)
-    //     //     }).timeout(7000)
-            
-    //     // })
-    // });
-
-    // after(async function() {
-    //     await browser.close();
-    // });
-});
-
-
-// describe('Extension UI Testing', function() {
+    after(async function() {
+        await browser.close();
+    });
     
-//     this.timeout(20000); // default is 2 seconds and that may not be enough to boot browsers and pages.
-//     before(async function() {
-//         await boot("popup.html");
-//     });
-
-//     describe('Home Page', async function() {
-//         it('Greet Message', async function() {
-            
-//             const inputElement = await extensionPage.$("[id='test-title']");
-//             assert.ok(inputElement, 'Input is not rendered');
-            
-//             // await extensionPage.type("[id='test-title']", 'Webstrates1');
-//             // await extensionPage.click('[data-test-greet-button]');
-            
-//             const greetMessage  = await extensionPage.$eval('#test-title', element => element.textContent)
-//             assert.equal(greetMessage, 'Webstrates', 'Webstrates title is not shown');
-//         })
-//     });
-
-//     // after(async function() {
-//     //     await browser.close();
-//     // });
-// });
+});
