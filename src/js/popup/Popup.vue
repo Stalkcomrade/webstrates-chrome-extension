@@ -2,23 +2,9 @@
 <div id="app">
   <header class="header">
     <h1 align="center" id="test-title">Webstrates</h1>
-    
     <b-button variant="danger" v-on:click="deleteWebstratesStructure">Delete Structure Storage</b-button>
-    
     <br>
-    <br>
-    
-    <!-- <button v-on:click="deleteWebstratesStructure">Delete Structure Storage</button> -->
-    <!-- <div class="grid-container"> -->
-      <!-- <div class="sidebar"> -->
-        <!--   <li> bookmarks </li> -->
-        <!--   <li> history </li> -->
-        <!-- </div> -->
-      <!-- <img src="../../../assets/ws.png" height="16" width="16"/> -->
-      <!-- <img :src="require('../../../assets/ws.png')"/> -->
-      <!-- <img src="chrome-extension://cbnopjholofilabljdolcfnmpobkiagh/assets/ws.png" height="16" width="16"/> -->
-      <!-- <b-table striped hover :items="processedHistory" :fields="fields"> -->
-        
+    <br>        
         <div class="main">
           <div>
             <div>
@@ -104,7 +90,7 @@ export default {
         'b-button'  : BButton,
         'b-spinner' : BSpinner
     },
-data: () => ({
+    data: () => ({
         error: "",
         test: "test",
         bookmarksProcessed: [],
@@ -130,7 +116,6 @@ data: () => ({
                 key: 'version',
                 label: 'version',
                 sortable: true,
-                // Variant applies to the whole column, including the header and footer
                 variant: 'danger'
             },
             {
@@ -156,6 +141,7 @@ data: () => ({
         projects() {
             
             console.log("Projects watcher")
+            
             // making two project spaces consistent between each other
             // then branching projects are ready, filtering simple one
             
@@ -163,15 +149,15 @@ data: () => ({
             // before filtering
             
             var temp1 = this.simpleProjects
-
+            
             // TODO: fix filtering later
             // var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
             //     if (Object.keys(this.projects).includes(key)) {
             //         console.log("Filtered", key)}
-                
+            
 	    //     if (!Object.keys(this.projects).includes(key)) {
 	    //         rex[key] = temp1[key]
-                    
+            
             //         // extracting visits per entity
             //         // need to be consistent with the template
             //         // for rendering vue tables
@@ -182,22 +168,19 @@ data: () => ({
             //     }
             //     return rex
             // }, {})
-
+            
             var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
-                
-                // if (Object.keys(this.projects).includes(key)) {
-                //     console.log("Filtered", key)}
                 
 	        // if (!Object.keys(this.projects).includes(key)) {
                 
-	            rex[key] = temp1[key]
-                    // extracting visits per entity
-                    // need to be consistent with the template
-                    // for rendering vue tables
-                    rex[key].forEach(entity => {
-                        entity.visits = entity.searchElement.visitCount
-                        entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
-                    })
+	        rex[key] = temp1[key]
+                // extracting visits per entity
+                // need to be consistent with the template
+                // for rendering vue tables
+                rex[key].forEach(entity => {
+                    entity.visits = entity.searchElement.visitCount
+                    entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
+                })
                 // }
                 return rex
             }, {})
@@ -207,14 +190,18 @@ data: () => ({
         }
     },
     methods: {
-        redirect: function(link, entityCheck) {
+        /**
+         * Creates iframe with a webstrate given a link
+         * @param link - link to a webstrate
+         */
+        
+        redirect: function(link) {
             if (link == null) {
-                console.error("Link is null for this entity: ", entityCheck)
+                console.error("Link is null for this entity: ")
             } else {
-                console.log(link)
-                // window.open(link, '_blank')
-                // window.location.replace(link)
 
+                console.log(link)
+                
                 if (document.getElementById("rtmframe")) {
                     document.getElementById("rtmframe").remove()
                 }
@@ -226,7 +213,7 @@ data: () => ({
 	        frame.setAttribute('frameborder', '0');
 	        frame.setAttribute('id', 'rtmframe');
                 
-		frame.setAttribute('src', link);
+		    frame.setAttribute('src', link);
                 document.body.appendChild(frame)
                 
             }
@@ -291,31 +278,38 @@ data: () => ({
                 })
             })
         },
+
         /**
+         *        
          * set our internal state
          * with the result from the
          * chrome api call
+         * @param storage
          */
         setConfig: function(storage) {
             this.config = storage.config;
         },
+        /**
+        * 
+        */
         drawInterface: function() {
 
             d3.selectAll("tr[role='row']")
 		.append("svg")
 		.attr("width", 30)
 		.attr("height", 30)
-                .append("g")
-	        .append("path")
-	        .attr("d", this.icon)
-                .on("click", () => {
-                    this.fetchInfoPerWs()
-                    console.log("clicked")
+        .append("g")
+	    .append("path")
+	    .attr("d", this.icon)
+        .on("click", () => {
+                   this.fetchInfoPerWs()
+                   console.log("clicked")
                 })
-            
-            
         },
         // content script execution
+        /**
+         *
+         */
         executeContentScripts: function() {
 
 
@@ -432,6 +426,14 @@ data: () => ({
             })
         },
         // use to group similar entities (composite key distinguishes bookmarks, versions, tags and servers) to count visits
+
+        /**
+          *
+          *
+          * 
+          * @param xs
+          * @param key
+          */
         aggregateHistory: function(processedHistory) {
             
             // x - every element
