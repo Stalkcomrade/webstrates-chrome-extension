@@ -179,7 +179,7 @@ export default {
     methods: {
         /**
          * Creates iframe with a webstrate given a link
-         * @param link - link to a webstrate
+         * @param {any} link - link to a webstrate
          */
         
         redirect: function(link) {
@@ -200,7 +200,7 @@ export default {
 	        frame.setAttribute('frameborder', '0');
 	        frame.setAttribute('id', 'rtmframe');
                 
-		    frame.setAttribute('src', link);
+		frame.setAttribute('src', link);
                 document.body.appendChild(frame)
                 
             }
@@ -277,9 +277,9 @@ export default {
             this.config = storage.config;
         },
         /**
-        * It is not used in current implementation
-        * Idea was to render clickable icons per a row in a table
-        */
+         * It is not used in current implementation
+         * Idea was to render clickable icons per a row in a table
+         */
         drawInterface: function() {
             
             d3.selectAll("tr[role='row']")
@@ -406,17 +406,15 @@ export default {
         },
 
         /**
-          * use to group similar entities (composite key distinguishes bookmarks, versions, tags and servers)
-          * to count visits
-          * @param processedHistory - 
-          */
+         * use to group similar entities (composite key distinguishes bookmarks, versions, tags and servers)
+         * to count visits
+         * @param processedHistory - prepared history object
+         */
         aggregateHistory: function(processedHistory) {
             
             // x - every element
             // used to provide aggregate counts and get rid of the duplicates
-
-            
-            function groupBy(xs, key) {
+            var groupBy = function(xs, key) {
                 
                 return xs.reduce(function(rv, x) {
                     
@@ -451,9 +449,8 @@ export default {
             var processedHistoryMutated,
                 fnl,
                 grpProjects;
-                
             
-            // FIXME:
+            
             processedHistoryMutated = groupBy(processedHistory, "webstrateId")
             Object.keys(processedHistoryMutated).forEach(el => processedHistoryMutated[el].arr = null) //
             fnl = Object.keys(processedHistoryMutated).map(el => { try { return processedHistoryMutated[el] } catch(error) { return null} });
@@ -462,20 +459,18 @@ export default {
             return [fnl, grpProjects]
 
         },
-        },
-        
+    },
+    
     mounted() {
 
         // INFO: even though I am messing $watch Vue and promise-based styles
         // should give it a shot
         
-        // FIXME: restore options should return a promise
-        // FIXME: it seems that bookmarks are not extracted in the right time
         this.$nextTick(() => {
             var optionsRestored = this.restore_options()
         })
 
-        this.searchHistory()
+        this.searchHistory() // extracting user's browser history
 
         // INFO: extracting history
         setTimeout(() => {
@@ -505,9 +500,6 @@ export default {
             
             if (this.config.length !== 0) {
 
-                // FIXME: get rid of undefined and nulls
-                // FIXME: it seems like this is the source for duplicates across history entities
-                
                 this.config.forEach(bkm => {
                     var extractedBkmOBject = this.extractInfo(bkm.urlOrFolder, "bookmark")
                     extractedBkmOBject.server != "undefined" &&
@@ -518,7 +510,6 @@ export default {
                 })
 
                 clearInterval(updBookmarks)
-
                 this.drawInterface()
                 
             }
@@ -542,18 +533,18 @@ export default {
             // making projects WITHOUT considering their structure
             var [projectsOld, projectsNew] = this.aggregateHistory(this.processedHistory);
 
-            // FIXME: interfering with old ways of making projects
+            // interfering with old ways of making projects
+            // temporal fix
             this.finalHistory = projectsOld
 
-            // filtering those projects, which webstrate server is
-            // not in the list
-            // projectsNew
-
-            // FIXME: fetch from any server - API limitation
-            
-            // TODO: list of servers
-            // TODO: update list of servers to vue globals
+            // list of servers 
+            // update list of servers to vue globals
             console.log("List of servers in Popup", this.server)
+
+            // TODO: fetch from any server - API limitation
+            // filtering those projects, which webstrate server is
+            // not in the list projectsNew
+            
             var projectsNewFiltered = Object.keys(projectsNew).map(el => {
 	        if (projectsNew[el].some(ar => this.server.includes(ar.server))) {return el}
             })
@@ -576,12 +567,6 @@ export default {
             // order to synchronise them
             
             this.simpleProjects = projectsNew
-            // this.finestHistory = projectsNew
-            
-            // TODO: group entities with equal webstrateId in together
-            // TODO: except those with structure Projects
-
-            // console.log(this.finestHistory, "Finest History")
             console.log(this.finalHistory, "Final History")
         }
         
