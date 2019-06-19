@@ -33,7 +33,6 @@ var options = {
         popupVue: path.join(__dirname, "src/js/popup/Popup.vue"),
         options: path.join(__dirname, "src/js/options.js"),
         background: path.join(__dirname, "src/js/background.js"),
-        getOps: path.join(__dirname, "src/js/getOps.js"),
         getStructure: path.join(__dirname, "src/js/getStructure.js"),
         testFile: path.join(__dirname, "tests/componentsClient.test.js")
     },
