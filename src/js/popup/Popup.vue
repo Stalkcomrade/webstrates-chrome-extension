@@ -138,50 +138,37 @@ export default {
         ]
     }),
     watch: {
+        /**
+         * Watching for objects before rendering them on page
+         */
         projects() {
             
             console.log("Projects watcher")
             
+            var temp1 = this.simpleProjects
+
             // making two project spaces consistent between each other
             // then branching projects are ready, filtering simple one
             
             // suppress simple projects from being rendered
             // before filtering
-            
-            var temp1 = this.simpleProjects
-            
-            // TODO: fix filtering later
-            // var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
-            //     if (Object.keys(this.projects).includes(key)) {
-            //         console.log("Filtered", key)}
-            
-	    //     if (!Object.keys(this.projects).includes(key)) {
-	    //         rex[key] = temp1[key]
-            
-            //         // extracting visits per entity
-            //         // need to be consistent with the template
-            //         // for rendering vue tables
-            //         rex[key].forEach(entity => {
-            //             entity.visits = entity.searchElement.visitCount
-            //             entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
-            //         })
-            //     }
-            //     return rex
-            // }, {})
+
+            // if project name occurs in project structured (this.projects)
+            // then do not render it in project simple (temp1)
             
             var dt = Object.keys(temp1).reduce((rex, key) => { // temp 1 - project without branching
                 
-	        // if (!Object.keys(this.projects).includes(key)) {
-                
-	        rex[key] = temp1[key]
-                // extracting visits per entity
-                // need to be consistent with the template
-                // for rendering vue tables
-                rex[key].forEach(entity => {
-                    entity.visits = entity.searchElement.visitCount
-                    entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
-                })
-                // }
+	        if (!Object.keys(this.projects).includes(key)) {
+                    
+	            rex[key] = temp1[key]
+                    // extracting visits per entity
+                    // need to be consistent with the template
+                    // for rendering vue tables
+                    rex[key].forEach(entity => {
+                        entity.visits = entity.searchElement.visitCount
+                        entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY")
+                    })
+                }
                 return rex
             }, {})
             
@@ -218,11 +205,12 @@ export default {
                 
             }
         },
+        //.TODO: what Andreas was telling about catching transfering
         /**
-         * 
+         * Extracts entities like id, version and so on using regexp
          * @param history - string to extract information from
          * @param mode - "history" or "bookmark"
-         * @return - no return value, pushes to this.history
+         * @return regRes - object of webstrates with extracted parameters
          */
         extractInfo: function(history, mode) {
             
@@ -264,11 +252,10 @@ export default {
                 
             }
 
-            
-
             return regRes
         },
         /**
+         * Extracts all available browser history
          * @return - no return value, pushes to this.history
          */
         searchHistory: function(){
@@ -290,34 +277,38 @@ export default {
             this.config = storage.config;
         },
         /**
-        * 
+        * It is not used in current implementation
+        * Idea was to render clickable icons per a row in a table
         */
         drawInterface: function() {
-
+            
             d3.selectAll("tr[role='row']")
 		.append("svg")
 		.attr("width", 30)
 		.attr("height", 30)
-        .append("g")
-	    .append("path")
-	    .attr("d", this.icon)
-        .on("click", () => {
-                   this.fetchInfoPerWs()
-                   console.log("clicked")
+                .append("g")
+	        .append("path")
+	        .attr("d", this.icon)
+                .on("click", () => {
+                    this.fetchInfoPerWs()
+                    console.log("clicked")
                 })
         },
-        // content script execution
         /**
-         *
+         * This used to execute content scripts
+         * and communicate with them
+         * It injects content scripts to an open webstrate.
+         * So, it allows communication between chrome extension
+         * and webstrate server(s).
          */
         executeContentScripts: function() {
-
-
-            // used in order to create projects
+            
+            // Creates projects
             // localised into separate functions
             // because is used in two cases
+            
             var prepareProjects = (inputStructures) => {
-
+                
                 var projects = this.uniteProjects(inputStructures),
                     ttprj = {};
                 
@@ -332,91 +323,79 @@ export default {
                 
                 this.projects = ttprj
                 console.log("Projects with branching structure", this.projects)
-
+                
             }
 
-            
-            
-            
+            // script bundle to be executed
             var scripts = [
                 "getStructure.bundle.js"
             ],
                 flag = false; // content script execution is disabled by default
             
+
+            // for each script (in case there are multiple)
             scripts.forEach((script) => {
                 chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-
-                    // TODO: do not fetch webstrates, which ids are already in a storage
+                    
+                    // do not fetch webstrates, which ids are already in a storage
                     // uses local storage instead of global
                     // https://developer.chrome.com/apps/storage
+                    // Relying on local storage
+                    // since global is limited by size
                     chrome.storage.local.get(null, (result) => {
                         
-                        if (result["structures"] != null) { // structure storage exists
-
-                            // TODO: make this a function
+                        if (result["structures"] != null) { // if structure storage already exists 
                             prepareProjects(result["structures"])
                             
-                            // var projects = this.uniteProjects(result["structures"]),
-                            //     ttprj = {};
-                            // console.log("Accessing structure storage:", result["structures"])
-                            // // assembling projects, while considering their structures
-                            // projects.filter(el => { if (el.project) {return el}})
-                            //     .forEach(el => {
-                            //         ttprj[el.project] = this.finalHistory.filter(ws => ws.webstrateId == el.project || ws.webstrateId == el.wsId)
-                            //         ttprj[el.project].forEach(entity => entity.lastVisitTime = moment(entity.searchElement.lastVisitTime).format("MMM Do YY"))
-                            //     })
-                            // this.projects = ttprj
-                            // console.log("Projects with branching structure", this.projects)
-
-
                         } else { // structure storage is empty
                             
                             flag = true;
                             console.log("Structure storage is empty")
-
+                            
                             if (flag == true) {
-                        
+                                
                                 console.log("Executing content script")
                                 chrome.tabs.executeScript(tabs[0].id, {file: script}, () => {
-
+                                    
                                     var processedHistory = this.processedHistory,
                                         filteredHistory = processedHistory.map(el => el.webstrateId),
                                         uniqueHistory = Array.from(new Set(filteredHistory));
+                                    
+                                    console.log("History to send from popup", uniqueHistory)
+                                    chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
+                                    
+                                    // receiving answer from content script
+                                    // with the webstrates structures
+                                    chrome.runtime.onMessage.addListener(
+                                        (request, sender, sendResponse) => {
+                                            
+                                            // this.deleteWebstratesStructure("structures")
+                                            // filters nulls and undefined
+                                            
+                                            var projects = this.uniteProjects(JSON.parse(request.responseWebstratesStructure))
+                                            console.log("Projects: ", projects)
+                                            
+                                            var responseStr = JSON.parse(request.responseWebstratesStructure)
+                                                .filter(ws => {
+	                                            return ws != undefined && ws[0].webstrateId != "frontpage" && ws[0].webstrateId != "undefined"
+                                                })
+                                                .map(ws => {
+                                                    return {wsId      :  ws[0].webstrateId,
+                                                            structure :  ws[0]
+                                                           }
+                                                })
 
-                        console.log("History to send from popup", uniqueHistory)
-                        chrome.tabs.sendMessage(tabs[0].id, {history: JSON.stringify(uniqueHistory)});
-
-                        // receiving answer from content script
-                        // with the webstrates structures
-                        chrome.runtime.onMessage.addListener(
-                            (request, sender, sendResponse) => {
-                                
-                                // this.deleteWebstratesStructure("structures")
-                                // filters nulls and undefined
-
-                                var projects = this.uniteProjects(JSON.parse(request.responseWebstratesStructure))
-                                console.log("Projects: ", projects)
-                                
-                                var responseStr = JSON.parse(request.responseWebstratesStructure)
-                                    .filter(ws => {
-	                                return ws != undefined && ws[0].webstrateId != "frontpage" && ws[0].webstrateId != "undefined"
-                                    })
-                                    .map(ws => {
-                                        return {wsId      :  ws[0].webstrateId,
-                                                structure :  ws[0]
-                                               }
-                                    })
-
-                                this.saveWebstratesStructure("structures", responseStr)
-                                console.log("Got Response from Content - structure of Webstrates", responseStr)
-
-                                prepareProjects(responseStr)
-
-                                
-                            }
-                        );
-                        
-                        });
+                                            // from mixin.js
+                                            this.saveWebstratesStructure("structures", responseStr)
+                                            console.log("Got Response from Content - structure of Webstrates", responseStr)
+                                            
+                                            prepareProjects(responseStr)
+                                            
+                                            
+                                        }
+                                    );
+                                    
+                                });
                             }
                             
                         }
@@ -425,27 +404,27 @@ export default {
                 })
             })
         },
-        // use to group similar entities (composite key distinguishes bookmarks, versions, tags and servers) to count visits
 
         /**
-          *
-          *
-          * 
-          * @param xs
-          * @param key
+          * use to group similar entities (composite key distinguishes bookmarks, versions, tags and servers)
+          * to count visits
+          * @param processedHistory - 
           */
         aggregateHistory: function(processedHistory) {
             
             // x - every element
             // used to provide aggregate counts and get rid of the duplicates
-            var groupBy = function(xs, key) {
+
+            
+            function groupBy(xs, key) {
                 
                 return xs.reduce(function(rv, x) {
                     
                     // makes a composite key
                     key = String(x.webstrateId) + String(x.server) + String(x.version) + String(x.bookmark);
                     
-                    rv[key] = rv[key] || {arr: [], visits: 0, bookmark: x.bookmark, server: x.server, version: x.version, webstrateId: x.webstrateId, searchElement: x.searchElement}
+                    rv[key] = rv[key] || {arr: [], visits: 0, bookmark: x.bookmark, server: x.server, version: x.version,
+                                          webstrateId: x.webstrateId, searchElement: x.searchElement}
                     rv[key].arr.push(x)
                     rv[key].visits += x.searchElement.visitCount 
                     
@@ -457,6 +436,7 @@ export default {
 
             // used to make project structure WITHOUT taking structure
             // into account
+            
             var groupByProjects = function(xs, key) {
                 return xs.reduce(function(rv, x) {
                     

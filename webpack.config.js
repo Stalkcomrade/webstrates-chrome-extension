@@ -68,10 +68,10 @@ var options = {
             {
                 test: /\.css$/,
                 use: [
-                  'vue-style-loader',
-                  'css-loader'
+                    'vue-style-loader',
+                    'css-loader'
                 ]
-              }
+            }
             // {
             //     test: /\.css$/,
             //     use: [{
@@ -139,23 +139,16 @@ var options = {
             template: path.join(__dirname, "src", "tests.html"),
             filename: "tests.html",
             chunks: ["testFile"]
-        }),
-        new HtmlWebpackPlugin({
-            cache: true,
-            showErrors: true,
-            template: path.join(__dirname, "src", "testPuppeteer.html"),
-            filename: "testPuppeteer.html",
-        }),
-
+        })
     ]
 };
 
 if (env.NODE_ENV === "development") {
-    
+
     options.devtool = "eval"
-    
+
 } else if (env.NODE_ENV === "testing") {
-    
+
     options.devtool = 'inline-cheap-module-source-map';
     options.module.rules[0] = {
         test: /\.vue$/,
@@ -169,13 +162,16 @@ if (env.NODE_ENV === "development") {
     }
 
     options.externals = [nodeExternals()], // mocha-webpack
-    options.target = 'node', // webpack should compile node compatible code
-    options.entry.mainTest = path.join(__dirname, "tests/main.test.js")
-    
+        options.target = 'node', // webpack should compile node compatible code
+        options.entry.mainTest = path.join(__dirname, "tests/main.test.js")
+
     // use absolute paths in sourcemaps (important for debugging via IDE)
     options.output.devtoolModuleFilenameTemplate = '[absolute-resource-path]',
-    options.output.devtoolFallbackModuleFilenameTemplate = '[absolute-resource-path]?[hash]'
-    options.node = {fs: "empty", module: "empty"} // use for motcha import
+        options.output.devtoolFallbackModuleFilenameTemplate = '[absolute-resource-path]?[hash]'
+    options.node = {
+        fs: "empty",
+        module: "empty"
+    } // use for motcha import
 }
 
 
