@@ -1,7 +1,11 @@
+/* global chrome fetch */
 'use strict';
 
-// get operational history per a webstrate
-// FIXME: add server
+/**
+ * get operational history per a webstrate
+ * TODO: add server
+ * @param {any} webstrateId
+ */
 const getOps = async (webstrateId) => {
 
     return fetch("https://webstrates.cs.au.dk/" + webstrateId + "/?ops&from=0&to=2")
@@ -9,7 +13,6 @@ const getOps = async (webstrateId) => {
             return html.json()
         })
         .then((body) => {
-            // FIXME: body[0] == undefined && debugger;
             console.log("Fetched:\n", webstrateId, body[0])
             return body[0]
         })
@@ -18,7 +21,7 @@ const getOps = async (webstrateId) => {
 
 /**
  * search for copies given a operational history of a webstrate
- * @param {any} cps - 
+ * @param {any} cps
  * @returns {array} array of copies given a webstrate
  */
 const searchCopies = async (input) => {
@@ -29,7 +32,6 @@ const searchCopies = async (input) => {
 
     // returns null if undefined
     if (!cpsWs) {
-        // FIXME: debugger
         console.log("Inspect", input)
         return null
     }
@@ -45,15 +47,19 @@ const searchCopies = async (input) => {
 
     target.push({
         webstrateId: input,
-        children: await children // FIXME: check how this works
+        children: await children
     })
 
     return target
 };
 
-// returns a promise per each webstrate to
-// return a structure later
-// FIXME: var webstrateId = "slimy-cobra-37";
+
+/**
+ * returns a promise per each webstrate to
+ * return a structure later
+ * Instead of rejecting promises, they are resolved with null
+ * @param {any} webstrateId
+ */
 const getStructure = (webstrateId) => {
 
     return new Promise(async (resolve, reject) => {
@@ -71,7 +77,7 @@ const getStructure = (webstrateId) => {
 
         } catch (error) {
             console.log("Rejected", webstrateId)
-            // SOLVED: checking whether resolve with null will change
+            // checking whether resolve with null will change
             // promise.all behaviour
             // indeed, it helped
             resolve(null)
