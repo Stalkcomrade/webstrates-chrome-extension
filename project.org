@@ -1,38 +1,12 @@
-* DONE Create storage for webstrates structures
-* TODO use local storage instead of global
-* TODO Figure out the way of assembling webstrates into meaningful projects
-* test
+* TODO Update or add new regular expression for catching server transferring
 
-#+begin_src js     '"*Javascript REPL*"'
+[[file:src/js/popup/Popup.vue:://.TODO: what Andreas was telling about catching transfering][Popup]]
 
-var ts = function(history) {
-    
-              var myString = history,
-                 regRes,
-                 myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
-    
-            var match = myRegexp.exec(myString);
-    
-            regRes = {
-	        server:  match !== null ? match[2] : "undefined",
-	        webstrateId:  match !== null ? match[4]: "undefined",
-                version:  match !== null ? match[4] : "last"
-                // tag: match[6]
-            }
+* TODO Open webstrate in an iframe within chrome extension instead of relying on the script injection to browser tab
 
-            console.log(regRes)
-            return regRes
-}
 
-temp1.forEach(el => {
+* TODO Add component for inspection connected Webstrate
 
-    ts(el)
+from this repo with [[https://github.com/Stalkcomrade/webstrates-web-components/tree/master/resources][components]]
 
-})
-
-var myString = "https://webstrates.cs.au.dk/wicked-wombat-56/#/calendar",
-                regRes,
-                myRegexp = /(^.*?)\:\/\/(.*?)(\/)(.*?)(\/)(.*?)(\/)(.*?$)/g;
-            
-            match = myRegexp.exec(myString);
-#+end_src
+[[demo/transclusion-activity.png]]

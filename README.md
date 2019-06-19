@@ -22,8 +22,7 @@ Basic idea is to provide simple grouping for webstrates. Two groupping principle
 
 ## TODO:
 
-![](demo/transclusion-activity.png)
-
+in [projects.org](https://github.com/Stalkcomrade/webstrates-chrome-extension/blob/master/project.org)
 
 ## Tests
 
